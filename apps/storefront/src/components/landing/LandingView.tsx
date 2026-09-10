@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { flushSync } from "react-dom";
 import Link from "next/link";
 import {
   ArrowRightIcon,
@@ -44,44 +43,27 @@ function persistLocale(l: Locale) {
   } catch {}
 }
 
-const FADE_MS = 160;
-
-export default function LandingView({ initialLocale }: { initialLocale: Locale }) {
-  const [locale, setLocale] = useState<Locale>(initialLocale);
+export default function LandingView({ locale }: { locale: Locale }) {
   const [dark, setDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [fading, setFading] = useState(false);
   const c = CONTENT[locale];
 
   useEffect(() => {
-    persistLocale(initialLocale);
+    persistLocale(locale);
     try {
       setDark(document.documentElement.classList.contains("dark"));
     } catch {}
-  }, [initialLocale]);
+  }, [locale]);
 
+  // Til almashganda sahifa to'liq qayta yuklanadi: cookie yoziladi,
+  // server sahifani yangi tilda beradi (matnlar joyida almashmaydi).
   function changeLocale(l: Locale) {
     if (l === locale) return;
     persistLocale(l);
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) {
-      setLocale(l);
-      return;
-    }
-    // View Transitions: eski va yangi ko'rinish o'rtasida yumshoq crossfade
-    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
-    if (typeof doc.startViewTransition === "function") {
-      doc.startViewTransition(() => {
-        flushSync(() => setLocale(l));
-      });
-      return;
-    }
-    // Qo'llamaydigan brauzerlar: qisqa so'nish, keyin almashtirish
-    setFading(true);
-    window.setTimeout(() => {
-      setLocale(l);
-      setFading(false);
-    }, FADE_MS);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("lang"); // ?lang= cookie'dan ustun, shuning uchun olib tashlanadi
+    if (url.href === window.location.href) window.location.reload();
+    else window.location.assign(url.href);
   }
 
   function toggleDark() {
@@ -101,11 +83,7 @@ export default function LandingView({ initialLocale }: { initialLocale: Locale }
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <div
-      className={`overflow-x-clip bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-[opacity,background-color,color] duration-150 ${
-        fading ? "opacity-0" : "opacity-100"
-      }`}
-    >
+    <div className="overflow-x-clip bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors">
       <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
 
       {/* Navigatsiya */}

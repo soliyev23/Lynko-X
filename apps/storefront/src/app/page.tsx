@@ -22,5 +22,5 @@ export async function generateMetadata({ searchParams }: { searchParams: Search 
 
 export default async function LandingPage({ searchParams }: { searchParams: Search }) {
   const locale = await resolveLocale(searchParams);
-  return <LandingView initialLocale={locale} />;
+  return <LandingView locale={locale} />;
 }
