@@ -3,6 +3,20 @@
 /* Dark rejim <html class="dark"> orqali boshqariladi (bosh sahifa tugmasi) */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Til almashganda butun sahifa yumshoq crossfade bilan almashadi (View Transitions) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+  animation-timing-function: ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 /* Standart (Classic) qiymatlar — do'kon shabloni theme-root'da ularni qayta belgilaydi */
 :root {
   --bg: #fafafa;
