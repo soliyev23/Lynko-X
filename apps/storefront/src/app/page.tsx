@@ -7,12 +7,14 @@ import {
   BarChartIcon,
   CheckIcon,
   LayersIcon,
+  MenuIcon,
   MoonIcon,
   PaletteIcon,
   ShieldIcon,
   SmartphoneIcon,
   StoreIcon,
   SunIcon,
+  XIcon,
   ZapIcon,
 } from "@/components/icons";
 
@@ -39,7 +41,16 @@ interface Plan {
 }
 
 interface Content {
-  nav: { features: string; how: string; pricing: string; login: string; open: string };
+  nav: {
+    features: string;
+    how: string;
+    pricing: string;
+    login: string;
+    open: string;
+    menu: string;
+    lightMode: string;
+    darkMode: string;
+  };
   hero: {
     badge: string;
     title1: string;
@@ -65,6 +76,9 @@ const CONTENT: Record<Locale, Content> = {
       pricing: "Tariflar",
       login: "Kirish",
       open: "Do'kon ochish",
+      menu: "Menyu",
+      lightMode: "Yorug' rejim",
+      darkMode: "Qorong'i rejim",
     },
     hero: {
       badge: "O'zbekiston bozori uchun yaratilgan",
@@ -169,6 +183,9 @@ const CONTENT: Record<Locale, Content> = {
       pricing: "Тарифы",
       login: "Войти",
       open: "Открыть магазин",
+      menu: "Меню",
+      lightMode: "Светлая тема",
+      darkMode: "Тёмная тема",
     },
     hero: {
       badge: "Создано для рынка Узбекистана",
@@ -274,12 +291,18 @@ const THEME_BOOT = `(function(){try{var t=localStorage.getItem('lynkox_theme');v
 export default function LandingPage() {
   const [locale, setLocale] = useState<Locale>("uz");
   const [dark, setDark] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const c = CONTENT[locale];
 
   useEffect(() => {
     try {
-      const savedLang = localStorage.getItem("lynkox_lang");
-      if (savedLang === "uz" || savedLang === "ru") setLocale(savedLang);
+      const fromQuery = new URLSearchParams(window.location.search).get("lang");
+      const savedLang = fromQuery ?? localStorage.getItem("lynkox_lang");
+      if (savedLang === "uz" || savedLang === "ru") {
+        setLocale(savedLang);
+        document.documentElement.lang = savedLang;
+        if (fromQuery) localStorage.setItem("lynkox_lang", savedLang);
+      }
       setDark(document.documentElement.classList.contains("dark"));
     } catch {}
   }, []);
@@ -304,23 +327,32 @@ export default function LandingPage() {
   const muted = "text-gray-600 dark:text-gray-400";
   const card = "bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800";
   const band = "bg-gray-50 dark:bg-gray-900 border-y border-gray-100 dark:border-gray-800";
+  const navLink = "hover:text-gray-900 dark:hover:text-white transition-colors";
+  const mobileLink = `py-2.5 font-medium ${muted} hover:text-gray-900 dark:hover:text-white`;
+  const closeMenu = () => setMenuOpen(false);
 
   return (
-    <div className="bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors">
+    <div className="overflow-x-clip bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors">
       <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
 
       {/* Navigatsiya */}
       <header className="sticky top-0 z-20 bg-white/90 dark:bg-gray-950/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+          <Link
+            href="/"
+            className="text-lg sm:text-xl font-bold text-emerald-600 dark:text-emerald-400 lg:justify-self-start"
+          >
             LYNKO-X
           </Link>
-          <nav className={`hidden md:flex items-center gap-8 text-sm ${muted}`}>
-            <a href="#features" className="hover:text-gray-900 dark:hover:text-white">{c.nav.features}</a>
-            <a href="#how" className="hover:text-gray-900 dark:hover:text-white">{c.nav.how}</a>
-            <a href="#pricing" className="hover:text-gray-900 dark:hover:text-white">{c.nav.pricing}</a>
+
+          {/* Keng ekranda nav aniq markazda turadi (o'rta ustun) */}
+          <nav className={`hidden lg:flex items-center gap-8 text-sm ${muted} lg:justify-self-center`}>
+            <a href="#features" className={navLink}>{c.nav.features}</a>
+            <a href="#how" className={navLink}>{c.nav.how}</a>
+            <a href="#pricing" className={navLink}>{c.nav.pricing}</a>
           </nav>
-          <div className="flex items-center gap-2 sm:gap-3">
+
+          <div className="flex items-center gap-2 sm:gap-3 lg:justify-self-end">
             <div className="flex items-center rounded-lg border border-gray-200 dark:border-gray-700 p-0.5 text-xs font-semibold">
               {(["uz", "ru"] as Locale[]).map((l) => (
                 <button
@@ -338,49 +370,76 @@ export default function LandingPage() {
             </div>
             <button
               onClick={toggleDark}
-              aria-label={dark ? "Light mode" : "Dark mode"}
+              aria-label={dark ? c.nav.lightMode : c.nav.darkMode}
+              title={dark ? c.nav.lightMode : c.nav.darkMode}
               className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:border-emerald-500 transition"
             >
               {dark ? <SunIcon size={17} /> : <MoonIcon size={17} />}
             </button>
             <a
               href={`${ADMIN_URL}/login`}
-              className={`hidden sm:block text-sm font-medium ${muted} hover:text-gray-900 dark:hover:text-white px-2 py-2`}
+              className={`hidden lg:block text-sm font-medium ${muted} hover:text-gray-900 dark:hover:text-white px-2 py-2`}
             >
               {c.nav.login}
             </a>
             <a
               href={`${ADMIN_URL}/register`}
-              className="text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 transition whitespace-nowrap"
+              className="hidden sm:inline-flex text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 transition whitespace-nowrap"
             >
               {c.nav.open}
             </a>
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={c.nav.menu}
+              aria-expanded={menuOpen}
+              className="lg:hidden w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:border-emerald-500 transition"
+            >
+              {menuOpen ? <XIcon size={18} /> : <MenuIcon size={18} />}
+            </button>
           </div>
         </div>
+
+        {/* Mobil menyu */}
+        {menuOpen && (
+          <div className="lg:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
+            <nav className="max-w-6xl mx-auto px-4 py-3 flex flex-col text-sm">
+              <a href="#features" onClick={closeMenu} className={mobileLink}>{c.nav.features}</a>
+              <a href="#how" onClick={closeMenu} className={mobileLink}>{c.nav.how}</a>
+              <a href="#pricing" onClick={closeMenu} className={mobileLink}>{c.nav.pricing}</a>
+              <a href={`${ADMIN_URL}/login`} className={mobileLink}>{c.nav.login}</a>
+              <a
+                href={`${ADMIN_URL}/register`}
+                className="mt-2 mb-1 text-center font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2.5 transition"
+              >
+                {c.nav.open}
+              </a>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Hero */}
-      <section className="max-w-6xl mx-auto px-4 pt-20 pb-16 text-center">
-        <span className="inline-block text-xs font-semibold tracking-wide uppercase text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900 rounded-full px-3 py-1 mb-6">
+      <section className="max-w-6xl mx-auto px-4 pt-16 md:pt-24 pb-16 md:pb-20 text-center">
+        <span className="inline-block max-w-full text-xs font-semibold tracking-wide uppercase text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900 rounded-full px-3 py-1 mb-6">
           {c.hero.badge}
         </span>
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight max-w-3xl mx-auto">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] max-w-4xl mx-auto text-balance break-words">
           {c.hero.title1}{" "}
-          <span className="text-emerald-600 dark:text-emerald-400">{c.hero.accent}</span>
+          <span className="text-emerald-600 dark:text-emerald-400 whitespace-nowrap">{c.hero.accent}</span>
           {c.hero.title2 && ` ${c.hero.title2}`}
         </h1>
-        <p className={`text-lg md:text-xl ${muted} max-w-2xl mx-auto mt-6`}>{c.hero.text}</p>
-        <div className="flex flex-wrap gap-3 justify-center mt-8">
+        <p className={`text-lg md:text-xl ${muted} max-w-2xl mx-auto mt-6 text-pretty`}>{c.hero.text}</p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
           <a
             href={`${ADMIN_URL}/register`}
-            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl px-6 py-3.5 transition"
+            className="inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl px-6 py-3.5 transition"
           >
             {c.hero.start}
             <ArrowRightIcon size={18} />
           </a>
           <Link
             href="/demo"
-            className="inline-flex items-center gap-2 border border-gray-300 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-500 text-gray-700 dark:text-gray-200 font-medium rounded-xl px-6 py-3.5 transition"
+            className="inline-flex items-center justify-center gap-2 w-full sm:w-auto border border-gray-300 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-500 text-gray-700 dark:text-gray-200 font-medium rounded-xl px-6 py-3.5 transition"
           >
             {c.hero.demo}
           </Link>
@@ -398,8 +457,8 @@ export default function LandingPage() {
       {/* Imkoniyatlar */}
       <section id="features" className={band}>
         <div className="max-w-6xl mx-auto px-4 py-20">
-          <h2 className="text-3xl font-bold text-center">{c.features.title}</h2>
-          <p className={`${muted} text-center mt-3 max-w-2xl mx-auto`}>{c.features.subtitle}</p>
+          <h2 className="text-3xl font-bold text-center text-balance">{c.features.title}</h2>
+          <p className={`${muted} text-center mt-3 max-w-2xl mx-auto text-pretty`}>{c.features.subtitle}</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
             {c.features.items.map((f, i) => {
               const Icon = FEATURE_ICONS[i];
@@ -419,7 +478,7 @@ export default function LandingPage() {
 
       {/* Qanday ishlaydi */}
       <section id="how" className="max-w-6xl mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center">{c.how.title}</h2>
+        <h2 className="text-3xl font-bold text-center text-balance">{c.how.title}</h2>
         <div className="grid md:grid-cols-3 gap-8 mt-12">
           {c.how.steps.map((s, i) => (
             <div key={s.title} className="text-center">
@@ -436,7 +495,7 @@ export default function LandingPage() {
       {/* Tariflar */}
       <section id="pricing" className={band}>
         <div className="max-w-6xl mx-auto px-4 py-20">
-          <h2 className="text-3xl font-bold text-center">{c.pricing.title}</h2>
+          <h2 className="text-3xl font-bold text-center text-balance">{c.pricing.title}</h2>
           <p className={`${muted} text-center mt-3`}>{c.pricing.subtitle}</p>
           <div className="grid md:grid-cols-3 gap-6 mt-12 items-stretch">
             {c.pricing.plans.map((p) => (
@@ -492,8 +551,8 @@ export default function LandingPage() {
         <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-5">
           <ZapIcon size={24} />
         </div>
-        <h2 className="text-3xl font-bold">{c.cta.title}</h2>
-        <p className={`${muted} mt-3 max-w-xl mx-auto`}>{c.cta.text}</p>
+        <h2 className="text-3xl font-bold text-balance">{c.cta.title}</h2>
+        <p className={`${muted} mt-3 max-w-xl mx-auto text-pretty`}>{c.cta.text}</p>
         <a
           href={`${ADMIN_URL}/register`}
           className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl px-6 py-3.5 mt-8 transition"
