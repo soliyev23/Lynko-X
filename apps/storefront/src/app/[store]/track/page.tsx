@@ -59,8 +59,6 @@ export default function TrackOrderPage({
     }
   }
 
-  const input =
-    "mt-1 w-full rounded-xl border border-gray-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white";
   const currentStep = order
     ? STEPS.findIndex((s) => s.key === order.status)
     : -1;
@@ -69,44 +67,41 @@ export default function TrackOrderPage({
     <div className="max-w-xl mx-auto">
       <Link
         href={`/${slug}`}
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-emerald-600"
+        className="inline-flex items-center gap-1.5 text-sm t-muted hover:underline"
       >
         <ArrowLeftIcon size={15} />
         Do'konga qaytish
       </Link>
-      <h1 className="text-2xl font-bold mt-4 mb-2">Buyurtmani kuzatish</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <h1 className="t-heading text-2xl font-bold mt-4 mb-2">
+        Buyurtmani kuzatish
+      </h1>
+      <p className="t-muted text-sm mb-6">
         Buyurtma raqami va buyurtma berishda kiritgan telefon raqamingizni
         yozing.
       </p>
 
-      <form
-        onSubmit={submit}
-        className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4"
-      >
+      <form onSubmit={submit} className="t-card-border p-5 space-y-4">
         <div className="grid sm:grid-cols-2 gap-4">
           <label className="block">
-            <span className="text-sm font-medium text-gray-700">
-              Buyurtma raqami
-            </span>
+            <span className="text-sm font-medium">Buyurtma raqami</span>
             <input
               required
               inputMode="numeric"
               placeholder="1001"
               value={number}
               onChange={(e) => setNumber(e.target.value.replace(/\D/g, ""))}
-              className={input}
+              className="t-input mt-1"
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-gray-700">Telefon</span>
+            <span className="text-sm font-medium">Telefon</span>
             <input
               required
               type="tel"
               placeholder="+998 90 123 45 67"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className={input}
+              className="t-input mt-1"
             />
           </label>
         </div>
@@ -115,20 +110,17 @@ export default function TrackOrderPage({
             {error}
           </div>
         )}
-        <button
-          disabled={busy}
-          className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-medium rounded-xl px-5 py-2.5"
-        >
+        <button disabled={busy} className="t-btn px-5 py-2.5">
           <SearchIcon size={16} />
           {busy ? "Qidirilmoqda..." : "Tekshirish"}
         </button>
       </form>
 
       {order && (
-        <div className="mt-6 bg-white rounded-2xl border border-gray-200 p-5">
+        <div className="mt-6 t-card-border p-5">
           <div className="flex items-center justify-between mb-5">
             <div className="font-semibold">Buyurtma #{order.number}</div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm t-muted">
               {new Date(order.createdAt).toLocaleDateString("uz-UZ")}
             </div>
           </div>
@@ -143,27 +135,37 @@ export default function TrackOrderPage({
               {STEPS.map((s, i) => {
                 const done = i <= currentStep;
                 return (
-                  <li key={s.key} className="flex-1 flex flex-col items-center relative">
+                  <li
+                    key={s.key}
+                    className="flex-1 flex flex-col items-center relative"
+                  >
                     {i > 0 && (
                       <span
-                        className={`absolute top-3.5 right-1/2 w-full h-0.5 ${
-                          i <= currentStep ? "bg-emerald-500" : "bg-gray-200"
-                        }`}
+                        className="absolute top-3.5 right-1/2 w-full h-0.5"
+                        style={{
+                          background: done ? "var(--primary)" : "var(--border)",
+                        }}
                       />
                     )}
                     <span
-                      className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
+                      className="relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold"
+                      style={
                         done
-                          ? "bg-emerald-500 text-white"
-                          : "bg-gray-100 text-gray-400 border border-gray-200"
-                      }`}
+                          ? {
+                              background: "var(--primary)",
+                              color: "var(--primary-text)",
+                            }
+                          : {
+                              background: "var(--primary-soft)",
+                              color: "var(--muted)",
+                              border: "1px solid var(--border)",
+                            }
+                      }
                     >
                       {done ? <CheckIcon size={14} /> : i + 1}
                     </span>
                     <span
-                      className={`mt-2 text-xs text-center ${
-                        done ? "text-gray-900 font-medium" : "text-gray-400"
-                      }`}
+                      className={`mt-2 text-xs text-center ${done ? "font-medium" : "t-muted"}`}
                     >
                       {s.label}
                     </span>
@@ -176,21 +178,21 @@ export default function TrackOrderPage({
           <div className="text-sm space-y-1.5">
             {order.items.map((i, idx) => (
               <div key={idx} className="flex justify-between">
-                <span className="text-gray-600">
+                <span className="t-muted">
                   {i.name} × {i.quantity}
                 </span>
                 <span>{money(i.price * i.quantity)}</span>
               </div>
             ))}
-            <div className="flex justify-between text-gray-500 pt-2 border-t border-gray-100">
+            <div className="flex justify-between t-muted pt-2 border-t t-divider">
               <span>Yetkazish</span>
               <span>{money(order.deliveryFee)}</span>
             </div>
-            <div className="flex justify-between font-bold text-base pt-2 border-t border-gray-100">
+            <div className="flex justify-between font-bold text-base pt-2 border-t t-divider">
               <span>Jami</span>
               <span>{money(order.total)}</span>
             </div>
-            <div className="text-xs text-gray-400 pt-1">
+            <div className="text-xs t-muted pt-1">
               To'lov: {order.paymentStatus === "PAID" ? "to'langan" : "kutilmoqda"}
             </div>
           </div>

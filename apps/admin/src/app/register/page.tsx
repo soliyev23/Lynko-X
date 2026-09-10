@@ -33,7 +33,7 @@ export default function RegisterPage() {
         body: JSON.stringify(form),
       });
       setToken(res.token);
-      router.push("/");
+      router.push("/design?welcome=1");
     } catch (err: any) {
       setError(err.message);
     } finally {

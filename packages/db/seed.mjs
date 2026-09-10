@@ -52,6 +52,8 @@ const store = await prisma.store.create({
     phone: "+998 90 123 45 67",
     telegram: "lynkox_demo",
     deliveryFee: 20000,
+    theme: "classic",
+    bannerUrl: "https://picsum.photos/seed/lynko-banner/1600/600",
     ownerId: user.id,
   },
 });

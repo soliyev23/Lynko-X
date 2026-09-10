@@ -45,6 +45,8 @@ model Store {
   locale           String     @default("uz")
   deliveryFee      Int        @default(0) // so'mda
   plan             StorePlan  @default(FREE)
+  theme            String     @default("classic") // vitrina shabloni: classic | minimal | bold | elegant | market
+  bannerUrl        String? // hero-bo'lim uchun banner rasmi
   telegramBotToken String? // yangi buyurtma bildirishnomalari uchun
   telegramChatId   String?
   isActive         Boolean    @default(true)

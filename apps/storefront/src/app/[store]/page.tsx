@@ -4,11 +4,14 @@ import {
   fetchJson,
   minPrice,
   totalStock,
+  type ProductCard,
   type ProductListResponse,
   type StoreInfo,
 } from "@/lib/api";
 import { money } from "@/lib/format";
+import { CARD_CLASS, getTheme, type Theme } from "@/lib/themes";
 import { AddToCartButton } from "@/components/AddToCart";
+import { StoreHero } from "@/components/StoreHero";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -26,6 +29,80 @@ function buildUrl(
   if (params.page && params.page > 1) q.set("page", String(params.page));
   const qs = q.toString();
   return `/${slug}${qs ? `?${qs}` : ""}`;
+}
+
+function ProductCardView({
+  p,
+  slug,
+  theme,
+}: {
+  p: ProductCard;
+  slug: string;
+  theme: Theme;
+}) {
+  const flat = theme.card === "flat";
+  const pricesDiffer =
+    p.variants.length > 0 &&
+    new Set(p.variants.map((v) => v.price ?? p.price)).size > 1;
+
+  return (
+    <div
+      className={`${CARD_CLASS[theme.card]} overflow-hidden flex flex-col transition ${
+        theme.card === "shadow" ? "hover:-translate-y-0.5" : ""
+      }`}
+    >
+      <Link href={`/${slug}/p/${p.slug}`} className="block">
+        {p.images[0] ? (
+          <img
+            src={p.images[0]}
+            alt={p.name}
+            className={`w-full aspect-square object-cover t-soft ${flat ? "t-rounded-lg" : ""}`}
+          />
+        ) : (
+          <div
+            className={`w-full aspect-square t-soft flex items-center justify-center t-muted ${flat ? "t-rounded-lg" : ""}`}
+          >
+            <PackageIcon size={48} strokeWidth={1.5} />
+          </div>
+        )}
+      </Link>
+      <div className={`flex-1 flex flex-col ${flat ? "pt-3" : "p-3"}`}>
+        <Link
+          href={`/${slug}/p/${p.slug}`}
+          className="font-medium hover:underline line-clamp-2"
+        >
+          {p.name}
+        </Link>
+        <div className="mt-auto pt-3">
+          <div className="mb-2">
+            <span className="font-bold">
+              {money(minPrice(p))}
+              {pricesDiffer && " dan"}
+            </span>
+            {p.comparePrice && (
+              <span className="text-sm t-muted line-through ml-2">
+                {money(p.comparePrice)}
+              </span>
+            )}
+          </div>
+          {p.variants.length > 0 ? (
+            totalStock(p) === 0 ? (
+              <span className="t-btn-muted px-4 py-2 text-sm">Tugagan</span>
+            ) : (
+              <Link
+                href={`/${slug}/p/${p.slug}`}
+                className="t-btn px-4 py-2 text-sm"
+              >
+                Tanlash
+              </Link>
+            )
+          ) : (
+            <AddToCartButton product={p} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default async function StorePage({
@@ -51,128 +128,62 @@ export default async function StorePage({
     ),
   ]);
   if (!store || !result) notFound();
+  const theme = getTheme(store.theme);
   const products = result.items;
+  const showHero = !search && !category && page === 1;
 
-  const chip = (active: boolean) =>
-    `rounded-full px-4 py-1.5 text-sm font-medium border transition ${
-      active
-        ? "bg-emerald-600 text-white border-emerald-600"
-        : "bg-white text-gray-600 border-gray-300 hover:border-emerald-400"
-    }`;
+  const categoryChips = store.categories.length > 0 && (
+    <div className="flex flex-wrap gap-2 flex-1">
+      <Link
+        href={buildUrl(slug, { search })}
+        className={`t-chip ${!category ? "t-chip-active" : ""}`}
+      >
+        Barchasi
+      </Link>
+      {store.categories.map((c) => (
+        <Link
+          key={c.id}
+          href={buildUrl(slug, { category: c.slug, search })}
+          className={`t-chip ${category === c.slug ? "t-chip-active" : ""}`}
+        >
+          {c.name}
+        </Link>
+      ))}
+    </div>
+  );
 
-  return (
-    <div>
-      {store.description && (
-        <p className="text-gray-500 mb-6 max-w-2xl">{store.description}</p>
-      )}
+  const searchForm = (
+    <form action={`/${slug}`} className="relative md:w-72">
+      {category && <input type="hidden" name="category" value={category} />}
+      <SearchIcon
+        size={16}
+        className="absolute left-3 top-1/2 -translate-y-1/2 t-muted"
+      />
+      <input
+        name="search"
+        defaultValue={search ?? ""}
+        placeholder="Mahsulot qidirish"
+        className="t-input pl-9 text-sm"
+      />
+    </form>
+  );
 
-      <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
-        {store.categories.length > 0 && (
-          <div className="flex flex-wrap gap-2 flex-1">
-            <Link href={buildUrl(slug, { search })} className={chip(!category)}>
-              Barchasi
-            </Link>
-            {store.categories.map((c) => (
-              <Link
-                key={c.id}
-                href={buildUrl(slug, { category: c.slug, search })}
-                className={chip(category === c.slug)}
-              >
-                {c.name}
-              </Link>
-            ))}
-          </div>
-        )}
-        <form action={`/${slug}`} className="relative md:w-72">
-          {category && <input type="hidden" name="category" value={category} />}
-          <SearchIcon
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            name="search"
-            defaultValue={search ?? ""}
-            placeholder="Mahsulot qidirish"
-            className="w-full rounded-xl border border-gray-300 bg-white pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </form>
-      </div>
-
+  const catalog = (
+    <div id="catalog">
       {search && (
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm t-muted mb-4">
           «{search}» bo'yicha {result.total} ta natija ·{" "}
-          <Link
-            href={buildUrl(slug, { category })}
-            className="text-emerald-600 hover:underline"
-          >
+          <Link href={buildUrl(slug, { category })} className="t-link">
             tozalash
           </Link>
         </p>
       )}
-
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className={`grid ${theme.columns} gap-4 ${theme.card === "flat" ? "gap-x-6 gap-y-10" : ""}`}>
         {products.map((p) => (
-          <div
-            key={p.id}
-            className="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col hover:shadow-md transition"
-          >
-            <Link href={`/${slug}/p/${p.slug}`} className="block">
-              {p.images[0] ? (
-                <img
-                  src={p.images[0]}
-                  alt={p.name}
-                  className="w-full aspect-square object-cover bg-gray-100"
-                />
-              ) : (
-                <div className="w-full aspect-square bg-gray-100 flex items-center justify-center text-gray-300">
-                  <PackageIcon size={48} strokeWidth={1.5} />
-                </div>
-              )}
-            </Link>
-            <div className="p-3 flex-1 flex flex-col">
-              <Link
-                href={`/${slug}/p/${p.slug}`}
-                className="font-medium hover:text-emerald-600 line-clamp-2"
-              >
-                {p.name}
-              </Link>
-              <div className="mt-auto pt-3">
-                <div className="mb-2">
-                  <span className="font-bold">
-                    {money(minPrice(p))}
-                    {p.variants.length > 0 &&
-                      new Set(p.variants.map((v) => v.price ?? p.price)).size >
-                        1 &&
-                      " dan"}
-                  </span>
-                  {p.comparePrice && (
-                    <span className="text-sm text-gray-400 line-through ml-2">
-                      {money(p.comparePrice)}
-                    </span>
-                  )}
-                </div>
-                {p.variants.length > 0 ? (
-                  totalStock(p) === 0 ? (
-                    <span className="inline-block bg-gray-100 text-gray-400 rounded-xl px-4 py-2 text-sm font-medium">
-                      Tugagan
-                    </span>
-                  ) : (
-                    <Link
-                      href={`/${slug}/p/${p.slug}`}
-                      className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 py-2 text-sm font-medium transition"
-                    >
-                      Tanlash
-                    </Link>
-                  )
-                ) : (
-                  <AddToCartButton product={p} />
-                )}
-              </div>
-            </div>
-          </div>
+          <ProductCardView key={p.id} p={p} slug={slug} theme={theme} />
         ))}
         {products.length === 0 && (
-          <div className="col-span-full text-center text-gray-400 py-16">
+          <div className="col-span-full text-center t-muted py-16">
             {search ? "Hech narsa topilmadi" : "Hozircha mahsulotlar yo'q"}
           </div>
         )}
@@ -183,36 +194,95 @@ export default async function StorePage({
           {page > 1 ? (
             <Link
               href={buildUrl(slug, { category, search, page: page - 1 })}
-              className="inline-flex items-center gap-1 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:border-emerald-400"
+              className="t-btn-outline px-4 py-2 text-sm"
             >
               <ChevronLeftIcon size={16} />
               Oldingi
             </Link>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-xl border border-gray-200 px-4 py-2 text-sm text-gray-300">
+            <span className="t-btn-outline px-4 py-2 text-sm opacity-40">
               <ChevronLeftIcon size={16} />
               Oldingi
             </span>
           )}
-          <span className="text-sm text-gray-500">
+          <span className="text-sm t-muted">
             {page} / {result.totalPages}
           </span>
           {page < result.totalPages ? (
             <Link
               href={buildUrl(slug, { category, search, page: page + 1 })}
-              className="inline-flex items-center gap-1 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:border-emerald-400"
+              className="t-btn-outline px-4 py-2 text-sm"
             >
               Keyingi
               <ChevronRightIcon size={16} />
             </Link>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-xl border border-gray-200 px-4 py-2 text-sm text-gray-300">
+            <span className="t-btn-outline px-4 py-2 text-sm opacity-40">
               Keyingi
               <ChevronRightIcon size={16} />
             </span>
           )}
         </div>
       )}
+    </div>
+  );
+
+  if (theme.sidebar) {
+    return (
+      <div>
+        {showHero && <StoreHero store={store} theme={theme} />}
+        <div className="lg:grid lg:grid-cols-[220px_1fr] gap-6">
+          <aside className="hidden lg:block">
+            <div className="t-card-border p-4 sticky top-20">
+              <div className="text-xs font-semibold uppercase tracking-wide t-muted mb-3">
+                Kategoriyalar
+              </div>
+              <nav className="space-y-1">
+                <Link
+                  href={buildUrl(slug, { search })}
+                  className={`block px-2 py-1.5 text-sm t-rounded ${
+                    !category ? "t-soft t-primary font-semibold" : "hover:t-soft"
+                  }`}
+                >
+                  Barchasi
+                </Link>
+                {store.categories.map((c) => (
+                  <Link
+                    key={c.id}
+                    href={buildUrl(slug, { category: c.slug, search })}
+                    className={`block px-2 py-1.5 text-sm t-rounded ${
+                      category === c.slug
+                        ? "t-soft t-primary font-semibold"
+                        : "hover:t-soft"
+                    }`}
+                  >
+                    {c.name}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          </aside>
+          <div>
+            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
+              <div className="lg:hidden flex-1">{categoryChips}</div>
+              <div className="hidden lg:block flex-1" />
+              {searchForm}
+            </div>
+            {catalog}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {showHero && <StoreHero store={store} theme={theme} />}
+      <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
+        {categoryChips || <div className="flex-1" />}
+        {searchForm}
+      </div>
+      {catalog}
     </div>
   );
 }

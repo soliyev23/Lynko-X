@@ -6,8 +6,10 @@ import {
   minPrice,
   totalStock,
   type ProductCard,
+  type StoreInfo,
 } from "@/lib/api";
 import { money } from "@/lib/format";
+import { getTheme } from "@/lib/themes";
 import { AddToCartButton } from "@/components/AddToCart";
 import { ArrowLeftIcon, PackageIcon } from "@/components/icons";
 
@@ -36,16 +38,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductPage({ params }: Props) {
   const { store: storeSlug, slug } = await params;
-  const product = await fetchJson<ProductCard>(
-    `/storefront/${storeSlug}/products/${slug}`,
-  );
-  if (!product) notFound();
+  const [store, product] = await Promise.all([
+    fetchJson<StoreInfo>(`/storefront/${storeSlug}`),
+    fetchJson<ProductCard>(`/storefront/${storeSlug}/products/${slug}`),
+  ]);
+  if (!store || !product) notFound();
+  const theme = getTheme(store.theme);
+  const pricesDiffer =
+    product.variants.length > 0 &&
+    new Set(product.variants.map((v) => v.price ?? product.price)).size > 1;
 
   return (
     <div>
       <Link
         href={`/${storeSlug}`}
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-emerald-600"
+        className="inline-flex items-center gap-1.5 text-sm t-muted hover:underline"
       >
         <ArrowLeftIcon size={15} />
         Barcha mahsulotlar
@@ -56,10 +63,10 @@ export default async function ProductPage({ params }: Props) {
             <img
               src={product.images[0]}
               alt={product.name}
-              className="w-full rounded-2xl object-cover bg-gray-100 aspect-square"
+              className="w-full object-cover t-soft aspect-square t-rounded-lg"
             />
           ) : (
-            <div className="w-full aspect-square rounded-2xl bg-gray-100 flex items-center justify-center text-gray-300">
+            <div className="w-full aspect-square t-soft t-muted flex items-center justify-center t-rounded-lg">
               <PackageIcon size={72} strokeWidth={1.5} />
             </div>
           )}
@@ -70,7 +77,7 @@ export default async function ProductPage({ params }: Props) {
                   key={img}
                   src={img}
                   alt=""
-                  className="w-20 h-20 rounded-xl object-cover bg-gray-100"
+                  className="w-20 h-20 object-cover t-soft t-rounded"
                 />
               ))}
             </div>
@@ -78,34 +85,32 @@ export default async function ProductPage({ params }: Props) {
         </div>
         <div>
           {product.category && (
-            <div className="text-sm text-emerald-600 font-medium mb-1">
+            <div className="text-sm t-primary font-medium mb-1">
               {product.category.name}
             </div>
           )}
-          <h1 className="text-2xl font-bold mb-3">{product.name}</h1>
+          <h1 className={`t-heading text-2xl md:text-3xl mb-3 ${theme.headingClass}`}>
+            {product.name}
+          </h1>
           <div className="mb-4">
             <span className="text-2xl font-bold">
               {money(minPrice(product))}
-              {product.variants.length > 0 &&
-                new Set(
-                  product.variants.map((v) => v.price ?? product.price),
-                ).size > 1 &&
-                " dan"}
+              {pricesDiffer && " dan"}
             </span>
             {product.comparePrice && (
-              <span className="text-lg text-gray-400 line-through ml-3">
+              <span className="text-lg t-muted line-through ml-3">
                 {money(product.comparePrice)}
               </span>
             )}
           </div>
-          <div className="text-sm text-gray-500 mb-5">
+          <div className="text-sm t-muted mb-5">
             {totalStock(product) > 0
               ? `Omborda: ${totalStock(product)} dona`
               : "Omborda qolmagan"}
           </div>
           <AddToCartButton product={product} withQuantity />
           {product.description && (
-            <div className="mt-8 text-gray-600 whitespace-pre-line leading-relaxed">
+            <div className="mt-8 t-muted whitespace-pre-line leading-relaxed">
               {product.description}
             </div>
           )}

@@ -34,6 +34,8 @@ export class StorefrontService {
         phone: true,
         telegram: true,
         logoUrl: true,
+        bannerUrl: true,
+        theme: true,
         currency: true,
         deliveryFee: true,
         isActive: true,

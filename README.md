@@ -52,6 +52,10 @@ Manzillar va hisoblar:
 - **Sotuvchi**: ro'yxatdan o'tish = do'kon ochish; mahsulotlar (rasm yuklash, kategoriyalar,
   rang/o'lcham variantlari — har biriga alohida narx va ombor); buyurtmalar holati;
   do'kon sozlamalari; Telegram-bildirishnomalar (o'z boti orqali)
+- **Dizayn shablonlari** (`/design`): 5 ta tayyor ko'rinish — Classic, Minimal, Bold (qorong'i),
+  Elegant (serif), Market (yon panelli katalog). Har biri o'z palitrasi, shrifti, hero-bo'limi
+  va kartochka uslubiga ega; banner yuklash; o'zgarish vitrinada darhol ko'rinadi.
+  Shablon registri: `apps/storefront/src/lib/themes.ts` (yangi shablon = bitta obyekt)
 - **Xaridor**: katalog, qidiruv, sahifalash, variant tanlash, savat, checkout (naqd yoki
   test-onlayn), buyurtmani raqam + telefon orqali kuzatish; SEO meta-teglar
 - **Platforma admini**: umumiy statistika, barcha do'konlar (tarifni o'zgartirish,

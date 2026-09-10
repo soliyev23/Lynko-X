@@ -123,6 +123,22 @@ const uz = {
   telegramChatId: "Chat ID",
   telegramHint:
     "Yangi buyurtma kelganda Telegram'ga xabar keladi. @BotFather orqali bot yarating va tokenini kiriting; Chat ID'ni @userinfobot orqali bilib oling.",
+  design: "Dizayn",
+  chooseTemplate: "Shablonni tanlang",
+  templateHint:
+    "Do'koningiz ko'rinishini tanlang — o'zgarish darhol vitrinada ko'rinadi. Keyin istalgan vaqt almashtirish mumkin.",
+  welcomeTitle: "Do'koningiz tayyor!",
+  welcomeText:
+    "Endi unga mos ko'rinishni tanlang, banner yuklang va mahsulot qo'shishni boshlang.",
+  banner: "Banner rasmi",
+  bannerHint:
+    "Bosh sahifadagi hero-bo'lim uchun keng rasm (tavsiya: 1600×600). Market shablonida ishlatilmaydi.",
+  selected: "Tanlangan",
+  select: "Tanlash",
+  suitsFor: "Mos keladi",
+  font: "Shrift",
+  previewStore: "Vitrinada ko'rish",
+  nextAddProducts: "Mahsulot qo'shishga o'tish",
 };
 
 const ru: Record<keyof typeof uz, string> = {
@@ -238,6 +254,22 @@ const ru: Record<keyof typeof uz, string> = {
   telegramChatId: "Chat ID",
   telegramHint:
     "При новом заказе придёт сообщение в Telegram. Создайте бота через @BotFather и вставьте токен; Chat ID узнайте через @userinfobot.",
+  design: "Дизайн",
+  chooseTemplate: "Выберите шаблон",
+  templateHint:
+    "Выберите оформление магазина — изменения сразу видны на витрине. Шаблон можно сменить в любой момент.",
+  welcomeTitle: "Ваш магазин готов!",
+  welcomeText:
+    "Теперь выберите подходящее оформление, загрузите баннер и начните добавлять товары.",
+  banner: "Баннер",
+  bannerHint:
+    "Широкое изображение для главной страницы (рекомендуется 1600×600). В шаблоне Market не используется.",
+  selected: "Выбран",
+  select: "Выбрать",
+  suitsFor: "Подходит для",
+  font: "Шрифт",
+  previewStore: "Открыть витрину",
+  nextAddProducts: "Перейти к добавлению товаров",
 };
 
 const dictionaries: Record<Locale, typeof uz> = { uz, ru };

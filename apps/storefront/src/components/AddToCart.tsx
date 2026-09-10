@@ -55,11 +55,7 @@ export function AddToCartButton({
   }
 
   if (soldOut) {
-    return (
-      <span className="inline-block bg-gray-100 text-gray-400 rounded-xl px-4 py-2 text-sm font-medium">
-        Tugagan
-      </span>
-    );
+    return <span className="t-btn-muted px-4 py-2 text-sm">Tugagan</span>;
   }
 
   return (
@@ -75,13 +71,10 @@ export function AddToCartButton({
                 setSelectedId(v.id);
                 setQuantity(1);
               }}
-              className={`rounded-lg border px-3.5 py-1.5 text-sm font-medium transition ${
-                v.stock === 0
-                  ? "border-gray-200 text-gray-300 line-through"
-                  : selectedId === v.id
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-gray-300 text-gray-700 hover:border-emerald-400"
+              className={`t-chip ${selectedId === v.id ? "t-chip-active" : ""} ${
+                v.stock === 0 ? "opacity-40 line-through" : ""
               }`}
+              style={{ borderRadius: "var(--radius)" }}
             >
               {v.name}
             </button>
@@ -91,18 +84,17 @@ export function AddToCartButton({
       {hasVariants && selected && withQuantity && (
         <div className="text-lg font-bold">
           {money(price)}
-          <span className="text-sm text-gray-400 font-normal ml-2">
+          <span className="text-sm t-muted font-normal ml-2">
             Omborda: {stock} dona
           </span>
         </div>
       )}
       <div className="flex items-center gap-3">
         {withQuantity && (
-          <div className="flex items-center border border-gray-300 rounded-xl">
+          <div className="t-stepper">
             <button
               type="button"
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              className="px-3 py-2.5 text-gray-500 hover:text-gray-900"
             >
               <MinusIcon size={15} />
             </button>
@@ -110,7 +102,6 @@ export function AddToCartButton({
             <button
               type="button"
               onClick={() => setQuantity((q) => Math.min(stock, q + 1))}
-              className="px-3 py-2.5 text-gray-500 hover:text-gray-900"
             >
               <PlusIcon size={15} />
             </button>
@@ -119,13 +110,7 @@ export function AddToCartButton({
         <button
           onClick={handleAdd}
           disabled={maxed || (hasVariants && !selected)}
-          className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition ${
-            added
-              ? "bg-green-500 text-white"
-              : maxed
-                ? "bg-gray-100 text-gray-400"
-                : "bg-emerald-600 hover:bg-emerald-700 text-white"
-          }`}
+          className={`px-4 py-2 text-sm ${added ? "t-btn-outline" : maxed ? "t-btn-muted" : "t-btn"}`}
         >
           {added && <CheckIcon size={14} />}
           {added ? "Qo'shildi" : maxed ? "Savatda" : "Savatga"}

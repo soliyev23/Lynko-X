@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -8,7 +9,18 @@ import {
   MinLength,
 } from "class-validator";
 
+export const THEMES = ["classic", "minimal", "bold", "elegant", "market"] as const;
+
 export class UpdateStoreDto {
+  @IsOptional()
+  @IsIn(THEMES)
+  theme?: (typeof THEMES)[number];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  bannerUrl?: string;
+
   @IsOptional()
   @IsString()
   @MinLength(2)

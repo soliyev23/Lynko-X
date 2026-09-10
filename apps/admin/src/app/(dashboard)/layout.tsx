@@ -12,6 +12,7 @@ import {
   HomeIcon,
   LogOutIcon,
   PackageIcon,
+  PaletteIcon,
   ShieldIcon,
   SlidersIcon,
   StoreIcon,
@@ -72,6 +73,7 @@ export default function DashboardLayout({
     { href: "/", label: t("dashboard"), icon: HomeIcon },
     { href: "/products", label: t("products"), icon: PackageIcon },
     { href: "/orders", label: t("orders"), icon: CartIcon },
+    { href: "/design", label: t("design"), icon: PaletteIcon },
     { href: "/settings", label: t("settings"), icon: SlidersIcon },
   ];
   const platformNav = [

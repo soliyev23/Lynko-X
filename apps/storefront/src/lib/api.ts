@@ -35,6 +35,8 @@ export interface StoreInfo {
   phone: string | null;
   telegram: string | null;
   logoUrl: string | null;
+  bannerUrl: string | null;
+  theme: string;
   deliveryFee: number;
   categories: { id: string; name: string; slug: string }[];
 }

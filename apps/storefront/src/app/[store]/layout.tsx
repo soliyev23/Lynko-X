@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchJson, type StoreInfo } from "@/lib/api";
 import { CartProvider } from "@/lib/cart";
+import { getTheme } from "@/lib/themes";
 import { Header } from "@/components/Header";
 
 type Props = {
@@ -23,7 +24,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: store.name,
       description,
       type: "website",
-      ...(store.logoUrl ? { images: [store.logoUrl] } : {}),
+      ...(store.bannerUrl || store.logoUrl
+        ? { images: [store.bannerUrl ?? store.logoUrl!] }
+        : {}),
     },
   };
 }
@@ -32,48 +35,59 @@ export default async function StoreLayout({ children, params }: Props) {
   const { store: slug } = await params;
   const store = await fetchJson<StoreInfo>(`/storefront/${slug}`);
   if (!store) notFound();
+  const theme = getTheme(store.theme);
 
   return (
-    <CartProvider storeSlug={slug}>
-      <Header store={store} />
-      <main className="max-w-6xl mx-auto px-4 py-6">{children}</main>
-      <footer className="border-t border-gray-200 mt-12 py-6">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-400">
-          <div>
-            {store.name}
-            {store.telegram && (
-              <>
-                {" · "}
-                <a
-                  href={`https://t.me/${store.telegram}`}
-                  className="hover:text-emerald-600"
-                >
-                  @{store.telegram}
-                </a>
-              </>
-            )}
-            {store.phone && (
-              <>
-                {" · "}
-                <a href={`tel:${store.phone}`} className="hover:text-emerald-600">
-                  {store.phone}
-                </a>
-              </>
-            )}
+    <div
+      className="theme-root"
+      data-theme={theme.id}
+      style={theme.vars as React.CSSProperties}
+    >
+      <CartProvider storeSlug={slug}>
+        <Header store={store} theme={theme} />
+        <main className={`${theme.container} w-full mx-auto px-4 py-6 flex-1`}>
+          {children}
+        </main>
+        <footer className="border-t t-border mt-12 py-6">
+          <div
+            className={`${theme.container} mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm t-muted`}
+          >
+            <div>
+              {store.name}
+              {store.telegram && (
+                <>
+                  {" · "}
+                  <a
+                    href={`https://t.me/${store.telegram}`}
+                    className="hover:underline"
+                  >
+                    @{store.telegram}
+                  </a>
+                </>
+              )}
+              {store.phone && (
+                <>
+                  {" · "}
+                  <a href={`tel:${store.phone}`} className="hover:underline">
+                    {store.phone}
+                  </a>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-4">
+              <Link href={`/${slug}/track`} className="hover:underline">
+                Buyurtmani kuzatish
+              </Link>
+              <span className="opacity-70">
+                <Link href="/" className="hover:underline">
+                  LYNKO-X
+                </Link>{" "}
+                bilan yaratilgan
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href={`/${slug}/track`} className="hover:text-emerald-600">
-              Buyurtmani kuzatish
-            </Link>
-            <span className="text-gray-300">
-              <Link href="/" className="hover:text-emerald-600">
-                LYNKO-X
-              </Link>{" "}
-              bilan yaratilgan
-            </span>
-          </div>
-        </div>
-      </footer>
-    </CartProvider>
+        </footer>
+      </CartProvider>
+    </div>
   );
 }
