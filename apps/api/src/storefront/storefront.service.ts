@@ -3,15 +3,24 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { TelegramService } from "../notifications/telegram.service";
 import { PaymentsService } from "../payments/payments.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CheckoutDto } from "./dto";
+
+const PAGE_SIZE = 24;
+
+/** Telefon raqamini solishtirish uchun: faqat raqamlar, oxirgi 9 tasi. */
+function phoneKey(phone: string): string {
+  return phone.replace(/\D/g, "").slice(-9);
+}
 
 @Injectable()
 export class StorefrontService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly payments: PaymentsService,
+    private readonly telegram: TelegramService,
   ) {}
 
   async getStore(slug: string) {
@@ -36,18 +45,28 @@ export class StorefrontService {
     return store;
   }
 
-  async listProducts(slug: string, categorySlug?: string, search?: string) {
+  async listProducts(
+    slug: string,
+    categorySlug?: string,
+    search?: string,
+    page = 1,
+  ) {
     const store = await this.getStore(slug);
-    return this.prisma.product.findMany({
-      where: {
-        storeId: store.id,
-        isActive: true,
-        ...(categorySlug ? { category: { slug: categorySlug } } : {}),
-        ...(search
-          ? { name: { contains: search, mode: "insensitive" as const } }
-          : {}),
-      },
-      select: {
+    const where = {
+      storeId: store.id,
+      isActive: true,
+      ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+      ...(search
+        ? { name: { contains: search, mode: "insensitive" as const } }
+        : {}),
+    };
+    const safePage = Math.max(1, Math.floor(page) || 1);
+    const [items, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        skip: (safePage - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+        select: {
         id: true,
         name: true,
         slug: true,
@@ -61,8 +80,17 @@ export class StorefrontService {
           orderBy: { sortOrder: "asc" },
         },
       },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+    return {
+      items,
+      total,
+      page: safePage,
+      pageSize: PAGE_SIZE,
+      totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    };
   }
 
   async getProduct(slug: string, productSlug: string) {
@@ -186,12 +214,39 @@ export class StorefrontService {
       payment = await this.payments.getProvider("mock").createPayment(order);
     }
 
+    // Sotuvchiga Telegram orqali xabar — javobni kutmaymiz, xato bo'lsa logga yoziladi
+    this.prisma.store
+      .findUnique({
+        where: { id: store.id },
+        select: { name: true, telegramBotToken: true, telegramChatId: true },
+      })
+      .then((s) => s && this.telegram.notifyNewOrder(s, order))
+      .catch(() => undefined);
+
     return {
       orderId: order.id,
       number: order.number,
       total: order.total,
       payment,
     };
+  }
+
+  /** Xaridor buyurtmasini raqam + telefon orqali kuzatadi. */
+  async trackOrder(slug: string, number: number, phone: string) {
+    const store = await this.getStore(slug);
+    if (!Number.isInteger(number) || phoneKey(phone).length < 7) {
+      throw new NotFoundException("Buyurtma topilmadi");
+    }
+    const order = await this.prisma.order.findUnique({
+      where: { storeId_number: { storeId: store.id, number } },
+      select: { id: true, phone: true },
+    });
+    if (!order || phoneKey(order.phone) !== phoneKey(phone)) {
+      throw new NotFoundException(
+        "Bunday raqam va telefon bilan buyurtma topilmadi",
+      );
+    }
+    return this.getOrder(slug, order.id);
   }
 
   /** Buyurtma tasdiqlash sahifasi uchun (cheklangan maydonlar). */

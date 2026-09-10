@@ -15,6 +15,20 @@ const { PrismaClient } = await import("./client/index.js");
 const prisma = new PrismaClient();
 
 const DEMO_EMAIL = "demo@lynko-x.uz";
+const ADMIN_EMAIL = "admin@lynko-x.uz";
+
+// LYNKO-X platforma administratori (do'koni yo'q, /platform bo'limini ko'radi)
+if (!(await prisma.user.findUnique({ where: { email: ADMIN_EMAIL } }))) {
+  await prisma.user.create({
+    data: {
+      email: ADMIN_EMAIL,
+      name: "LYNKO-X Admin",
+      role: "ADMIN",
+      passwordHash: await bcrypt.hash("admin1234", 10),
+    },
+  });
+  console.log("Platforma admini yaratildi: admin@lynko-x.uz / admin1234");
+}
 
 const existing = await prisma.user.findUnique({ where: { email: DEMO_EMAIL } });
 if (existing) {

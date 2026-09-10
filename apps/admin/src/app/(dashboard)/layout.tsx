@@ -6,12 +6,16 @@ import Link from "next/link";
 import { api, getToken, setToken } from "@/lib/api";
 import { useI18n, type Locale } from "@/lib/i18n";
 import {
+  BarChartIcon,
   CartIcon,
   GlobeIcon,
   HomeIcon,
   LogOutIcon,
   PackageIcon,
+  ShieldIcon,
   SlidersIcon,
+  StoreIcon,
+  UsersIcon,
 } from "@/components/icons";
 
 interface Store {
@@ -19,6 +23,8 @@ interface Store {
   name: string;
   slug: string;
 }
+
+type Role = "MERCHANT" | "ADMIN";
 
 export default function DashboardLayout({
   children,
@@ -29,6 +35,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [store, setStore] = useState<Store | null>(null);
+  const [role, setRole] = useState<Role>("MERCHANT");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -36,13 +43,22 @@ export default function DashboardLayout({
       router.replace("/login");
       return;
     }
-    api<{ store: Store | null }>("/auth/me")
+    api<{ user: { role: Role }; store: Store | null }>("/auth/me")
       .then((res) => {
         setStore(res.store);
+        setRole(res.user.role);
         setReady(true);
       })
       .catch(() => router.replace("/login"));
   }, [router]);
+
+  // Rolga mos bo'limga yo'naltirish
+  useEffect(() => {
+    if (!ready) return;
+    const inPlatform = pathname.startsWith("/platform");
+    if (role === "ADMIN" && !inPlatform) router.replace("/platform");
+    if (role === "MERCHANT" && inPlatform) router.replace("/");
+  }, [ready, role, pathname, router]);
 
   if (!ready) {
     return (
@@ -52,30 +68,43 @@ export default function DashboardLayout({
     );
   }
 
-  const nav = [
+  const merchantNav = [
     { href: "/", label: t("dashboard"), icon: HomeIcon },
     { href: "/products", label: t("products"), icon: PackageIcon },
     { href: "/orders", label: t("orders"), icon: CartIcon },
     { href: "/settings", label: t("settings"), icon: SlidersIcon },
   ];
+  const platformNav = [
+    { href: "/platform", label: t("platformStats"), icon: BarChartIcon },
+    { href: "/platform/stores", label: t("stores"), icon: StoreIcon },
+    { href: "/platform/users", label: t("users"), icon: UsersIcon },
+  ];
+  const nav = role === "ADMIN" ? platformNav : merchantNav;
+  const isRoot = (href: string) => href === "/" || href === "/platform";
 
   return (
     <div className="min-h-screen flex">
       <aside className="w-64 bg-slate-900 text-white flex flex-col shrink-0">
         <div className="p-5 border-b border-slate-700">
           <div className="text-2xl font-bold text-indigo-400">LYNKO-X</div>
-          {store && (
-            <div className="text-sm text-slate-400 mt-1 truncate">
-              {store.name}
+          {role === "ADMIN" ? (
+            <div className="flex items-center gap-1.5 text-sm text-slate-400 mt-1">
+              <ShieldIcon size={14} />
+              {t("platformAdmin")}
             </div>
+          ) : (
+            store && (
+              <div className="text-sm text-slate-400 mt-1 truncate">
+                {store.name}
+              </div>
+            )
           )}
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {nav.map((item) => {
-            const active =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
+            const active = isRoot(item.href)
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
@@ -93,7 +122,7 @@ export default function DashboardLayout({
           })}
         </nav>
         <div className="p-3 border-t border-slate-700 space-y-2">
-          {store && (
+          {role === "MERCHANT" && store && (
             <a
               href={`http://localhost:3001/${store.slug}`}
               target="_blank"

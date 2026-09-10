@@ -17,8 +17,14 @@ export class StorefrontController {
     @Param("slug") slug: string,
     @Query("category") category?: string,
     @Query("search") search?: string,
+    @Query("page") page?: string,
   ) {
-    return this.storefront.listProducts(slug, category, search);
+    return this.storefront.listProducts(
+      slug,
+      category,
+      search,
+      Number(page) || 1,
+    );
   }
 
   @Get("products/:productSlug")
@@ -37,5 +43,14 @@ export class StorefrontController {
   @Get("orders/:orderId")
   getOrder(@Param("slug") slug: string, @Param("orderId") orderId: string) {
     return this.storefront.getOrder(slug, orderId);
+  }
+
+  @Get("track")
+  track(
+    @Param("slug") slug: string,
+    @Query("number") number: string,
+    @Query("phone") phone: string,
+  ) {
+    return this.storefront.trackOrder(slug, Number(number), phone ?? "");
   }
 }

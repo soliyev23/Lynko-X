@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -10,11 +11,30 @@ import { money } from "@/lib/format";
 import { AddToCartButton } from "@/components/AddToCart";
 import { ArrowLeftIcon, PackageIcon } from "@/components/icons";
 
-export default async function ProductPage({
-  params,
-}: {
-  params: Promise<{ store: string; slug: string }>;
-}) {
+type Props = { params: Promise<{ store: string; slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { store: storeSlug, slug } = await params;
+  const product = await fetchJson<ProductCard>(
+    `/storefront/${storeSlug}/products/${slug}`,
+  );
+  if (!product) return { title: "Mahsulot topilmadi" };
+  const description =
+    product.description?.slice(0, 160) ??
+    `${product.name} — ${money(minPrice(product))}`;
+  return {
+    title: product.name,
+    description,
+    openGraph: {
+      title: product.name,
+      description,
+      type: "website",
+      images: product.images.slice(0, 1),
+    },
+  };
+}
+
+export default async function ProductPage({ params }: Props) {
   const { store: storeSlug, slug } = await params;
   const product = await fetchJson<ProductCard>(
     `/storefront/${storeSlug}/products/${slug}`,

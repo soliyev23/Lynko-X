@@ -1,8 +1,10 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { PLAN_LIMITS } from "../common/plans";
 import { slugify } from "../common/slugify";
 import { PrismaService } from "../prisma/prisma.service";
 import { StoresService } from "../stores/stores.service";
@@ -47,6 +49,18 @@ export class ProductsService {
 
   async create(userId: string, dto: CreateProductDto) {
     const store = await this.stores.getStoreForUser(userId);
+
+    // Tarif limiti: FREE 10, BASIC 100, PRO cheksiz
+    const limit = PLAN_LIMITS[store.plan] ?? PLAN_LIMITS.FREE;
+    const count = await this.prisma.product.count({
+      where: { storeId: store.id },
+    });
+    if (count >= limit) {
+      throw new ForbiddenException(
+        `${store.plan} tarifida ko'pi bilan ${limit} ta mahsulot qo'shish mumkin. Tarifni oshiring.`,
+      );
+    }
+
     const slug = await this.uniqueSlug(store.id, dto.name);
     const { variants, ...data } = dto;
     return this.prisma.product.create({

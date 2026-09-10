@@ -8,32 +8,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============ Merchant (do'kon egasi) ============
+// ============ Foydalanuvchilar ============
+
+enum UserRole {
+  MERCHANT // do'kon egasi
+  ADMIN // LYNKO-X platforma administratori
+}
 
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   passwordHash String
   name         String
+  role         UserRole @default(MERCHANT)
   createdAt    DateTime @default(now())
   stores       Store[]
 }
 
 // ============ Tenant: har bir do'kon ============
 
+enum StorePlan {
+  FREE // 10 tagacha mahsulot
+  BASIC // 100 tagacha mahsulot
+  PRO // cheksiz
+}
+
 model Store {
-  id          String     @id @default(cuid())
-  slug        String     @unique // subdomen: {slug}.lynko-x.uz — hozircha /{slug}
-  name        String
-  description String?
-  phone       String?
-  telegram    String?
-  logoUrl     String?
-  currency    String     @default("UZS")
-  locale      String     @default("uz")
-  deliveryFee Int        @default(0) // so'mda
-  isActive    Boolean    @default(true)
-  ownerId     String
+  id               String     @id @default(cuid())
+  slug             String     @unique // subdomen: {slug}.lynko-x.uz — hozircha /{slug}
+  name             String
+  description      String?
+  phone            String?
+  telegram         String?
+  logoUrl          String?
+  currency         String     @default("UZS")
+  locale           String     @default("uz")
+  deliveryFee      Int        @default(0) // so'mda
+  plan             StorePlan  @default(FREE)
+  telegramBotToken String? // yangi buyurtma bildirishnomalari uchun
+  telegramChatId   String?
+  isActive         Boolean    @default(true)
+  ownerId          String
   owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   products    Product[]
   categories  Category[]

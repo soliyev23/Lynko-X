@@ -41,6 +41,16 @@ export class UpdateStoreDto {
   deliveryFee?: number;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  telegramBotToken?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  telegramChatId?: string;
+
+  @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 }

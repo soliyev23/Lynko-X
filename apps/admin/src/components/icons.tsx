@@ -100,6 +100,52 @@ export const XIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const UsersIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </Icon>
+);
+
+export const StoreIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <path d="M16 10a4 4 0 0 1-8 0" />
+  </Icon>
+);
+
+export const BarChartIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <line x1="12" y1="20" x2="12" y2="10" />
+    <line x1="18" y1="20" x2="18" y2="4" />
+    <line x1="6" y1="20" x2="6" y2="16" />
+  </Icon>
+);
+
+export const ShieldIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </Icon>
+);
+
+export const SearchIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </Icon>
+);
+
+export const ExternalLinkIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    <polyline points="15 3 21 3 21 9" />
+    <line x1="10" y1="14" x2="21" y2="3" />
+  </Icon>
+);
+
 export const UploadIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

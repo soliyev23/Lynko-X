@@ -26,6 +26,12 @@ export function Header({ store }: { store: StoreInfo }) {
           <span className="font-bold text-lg">{store.name}</span>
         </Link>
         <div className="flex items-center gap-4">
+          <Link
+            href={`/${store.slug}/track`}
+            className="hidden md:block text-sm text-gray-600 hover:text-emerald-600"
+          >
+            Buyurtmani kuzatish
+          </Link>
           {store.phone && (
             <a
               href={`tel:${store.phone}`}

@@ -59,6 +59,14 @@ export interface ProductCard {
   variants: ProductVariant[];
 }
 
+export interface ProductListResponse {
+  items: ProductCard[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 /** Variantli mahsulot uchun eng arzon narx. */
 export function minPrice(p: ProductCard): number {
   if (!p.variants.length) return p.price;

@@ -1,11 +1,14 @@
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { NestExpressApplication } from "@nestjs/platform-express";
+import helmet from "helmet";
 import { AppModule } from "./app.module";
 import { UPLOAD_DIR } from "./uploads/uploads.controller";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Rasmlar boshqa domendagi vitrinadan yuklanadi — CORP'ni ochiq qoldiramiz
+  app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
   app.enableCors({ origin: true });
   app.useStaticAssets(UPLOAD_DIR, { prefix: "/uploads/" });
   app.useGlobalPipes(

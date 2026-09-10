@@ -8,6 +8,13 @@ import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import { LoginDto, RegisterDto } from "./dto";
 
+type SessionUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: "MERCHANT" | "ADMIN";
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -40,7 +47,7 @@ export class AuthService {
       include: { stores: true },
     });
 
-    return this.buildSession(user.id, user.email, user.name, user.stores[0]);
+    return this.buildSession(user, user.stores[0]);
   }
 
   async login(dto: LoginDto) {
@@ -51,24 +58,33 @@ export class AuthService {
     if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException("Email yoki parol noto'g'ri");
     }
-    return this.buildSession(user.id, user.email, user.name, user.stores[0]);
+    return this.buildSession(user, user.stores[0]);
   }
 
   async me(userId: string) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
-      select: { id: true, email: true, name: true, stores: true },
+      select: { id: true, email: true, name: true, role: true, stores: true },
     });
-    return { user: { id: user.id, email: user.email, name: user.name }, store: user.stores[0] ?? null };
+    return {
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      store: user.stores[0] ?? null,
+    };
   }
 
   private async buildSession(
-    userId: string,
-    email: string,
-    name: string,
+    user: SessionUser,
     store: { id: string; slug: string; name: string } | undefined,
   ) {
-    const token = await this.jwt.signAsync({ sub: userId, email });
-    return { token, user: { id: userId, email, name }, store: store ?? null };
+    const token = await this.jwt.signAsync({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+    return {
+      token,
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      store: store ?? null,
+    };
   }
 }

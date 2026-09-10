@@ -2,18 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type TKey } from "@/lib/i18n";
 import { ImageUploader } from "@/components/ImageUploader";
 
 interface StoreSettings {
   name: string;
   slug: string;
+  plan: "FREE" | "BASIC" | "PRO";
   description: string;
   phone: string;
   telegram: string;
   logoUrl: string;
   deliveryFee: string;
+  telegramBotToken: string;
+  telegramChatId: string;
 }
+
+const PLAN_LIMITS: Record<string, number | null> = {
+  FREE: 10,
+  BASIC: 100,
+  PRO: null,
+};
 
 export default function SettingsPage() {
   const { t } = useI18n();
@@ -27,11 +36,14 @@ export default function SettingsPage() {
       setForm({
         name: s.name ?? "",
         slug: s.slug,
+        plan: s.plan ?? "FREE",
         description: s.description ?? "",
         phone: s.phone ?? "",
         telegram: s.telegram ?? "",
         logoUrl: s.logoUrl ?? "",
         deliveryFee: String(s.deliveryFee ?? 0),
+        telegramBotToken: s.telegramBotToken ?? "",
+        telegramChatId: s.telegramChatId ?? "",
       }),
     );
   }, []);
@@ -56,6 +68,8 @@ export default function SettingsPage() {
           telegram: form.telegram,
           logoUrl: form.logoUrl,
           deliveryFee: Number(form.deliveryFee) || 0,
+          telegramBotToken: form.telegramBotToken.trim(),
+          telegramChatId: form.telegramChatId.trim(),
         }),
       });
       setMessage(t("saved"));
@@ -70,6 +84,7 @@ export default function SettingsPage() {
 
   const input =
     "mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white";
+  const limit = PLAN_LIMITS[form.plan];
 
   return (
     <div className="max-w-2xl">
@@ -84,6 +99,22 @@ export default function SettingsPage() {
           localhost:3001/{form.slug}
         </a>
       </p>
+
+      <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 mb-6 flex items-center justify-between gap-4">
+        <div>
+          <div className="text-sm text-indigo-700">{t("currentPlan")}</div>
+          <div className="text-xl font-bold text-indigo-900">
+            {t(`plan_${form.plan}` as TKey)}
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-sm text-indigo-700">{t("productLimit")}</div>
+          <div className="text-xl font-bold text-indigo-900">
+            {limit === null ? t("unlimited") : limit}
+          </div>
+        </div>
+      </div>
+
       <form onSubmit={submit} className="space-y-4">
         {message && (
           <div className="bg-green-50 text-green-700 text-sm rounded-lg p-3">
@@ -165,6 +196,36 @@ export default function SettingsPage() {
             />
           </div>
         </div>
+
+        <div className="border-t border-gray-200 pt-5 mt-2">
+          <h2 className="font-semibold mb-1">{t("telegramNotifications")}</h2>
+          <p className="text-xs text-gray-500 mb-3">{t("telegramHint")}</p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">
+                {t("telegramBotToken")}
+              </span>
+              <input
+                value={form.telegramBotToken}
+                onChange={(e) => set("telegramBotToken", e.target.value)}
+                placeholder="123456789:AAH..."
+                className={`${input} font-mono text-sm`}
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">
+                {t("telegramChatId")}
+              </span>
+              <input
+                value={form.telegramChatId}
+                onChange={(e) => set("telegramChatId", e.target.value)}
+                placeholder="123456789"
+                className={`${input} font-mono text-sm`}
+              />
+            </label>
+          </div>
+        </div>
+
         <button
           disabled={busy}
           className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg px-5 py-2.5"

@@ -17,7 +17,11 @@ export class StoresService {
 
   async update(userId: string, dto: UpdateStoreDto) {
     const store = await this.getStoreForUser(userId);
-    return this.prisma.store.update({ where: { id: store.id }, data: dto });
+    // Bo'sh qoldirilgan ixtiyoriy maydonlar null bo'lib saqlanadi
+    const data = Object.fromEntries(
+      Object.entries(dto).map(([k, v]) => [k, v === "" ? null : v]),
+    );
+    return this.prisma.store.update({ where: { id: store.id }, data });
   }
 
   async stats(userId: string) {

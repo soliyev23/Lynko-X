@@ -46,7 +46,7 @@ export default function OrdersPage() {
                 : "bg-white text-gray-600 border-gray-300 hover:border-indigo-400"
             }`}
           >
-            {f ? t(`status_${f}` as TKey) : "Barchasi"}
+            {f ? t(`status_${f}` as TKey) : t("all")}
           </button>
         ))}
       </div>
