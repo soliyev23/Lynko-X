@@ -22,4 +22,9 @@ export class StoresController {
   stats(@CurrentUser() user: AuthUser) {
     return this.stores.stats(user.userId);
   }
+
+  @Get("analytics")
+  analytics(@CurrentUser() user: AuthUser) {
+    return this.stores.analytics(user.userId);
+  }
 }

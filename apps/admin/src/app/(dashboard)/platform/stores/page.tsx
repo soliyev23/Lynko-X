@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { dateTime } from "@/lib/format";
@@ -102,7 +103,7 @@ export default function PlatformStoresPage() {
             {stores?.map((s) => (
               <tr key={s.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3">
-                  <div className="font-medium">{s.name}</div>
+                  <Link href={`/platform/stores/${s.id}`} className="font-medium text-indigo-600 hover:underline">{s.name}</Link>
                   <a
                     href={`http://localhost:3001/${s.slug}`}
                     target="_blank"

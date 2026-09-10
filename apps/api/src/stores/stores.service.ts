@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { planUsage, storeAnalytics } from "../common/analytics";
 import { UpdateStoreDto } from "./dto";
 
 @Injectable()
@@ -42,6 +43,22 @@ export class StoresService {
       orders,
       newOrders,
       revenue: revenue._sum.total ?? 0,
+    };
+  }
+
+  /** Sotuvchi paneli uchun to'liq tahlil: dinamika, top mahsulotlar, ombor. */
+  async analytics(userId: string) {
+    const store = await this.getStoreForUser(userId);
+    const data = await storeAnalytics(this.prisma, store.id);
+    return {
+      ...data,
+      usage: planUsage(store.plan, data.totals.products),
+      store: {
+        name: store.name,
+        slug: store.slug,
+        theme: store.theme,
+        telegramConfigured: Boolean(store.telegramBotToken && store.telegramChatId),
+      },
     };
   }
 }

@@ -96,8 +96,9 @@ export default function DashboardLayout({
             </div>
           ) : (
             store && (
-              <div className="text-sm text-slate-400 mt-1 truncate">
-                {store.name}
+              <div className="mt-1">
+                <div className="text-sm text-slate-300 truncate">{store.name}</div>
+                <div className="text-xs text-slate-500">{t("merchantPanel")}</div>
               </div>
             )
           )}

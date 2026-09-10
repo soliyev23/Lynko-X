@@ -21,9 +21,19 @@ export class AdminController {
     return this.admin.stats();
   }
 
+  @Get("analytics")
+  analytics() {
+    return this.admin.analytics();
+  }
+
   @Get("stores")
   stores(@Query("search") search?: string) {
     return this.admin.listStores(search);
+  }
+
+  @Get("stores/:id")
+  store(@Param("id") id: string) {
+    return this.admin.getStore(id);
   }
 
   @Patch("stores/:id")
@@ -32,7 +42,7 @@ export class AdminController {
   }
 
   @Get("users")
-  users() {
-    return this.admin.listUsers();
+  users(@Query("search") search?: string) {
+    return this.admin.listUsers(search);
   }
 }

@@ -163,3 +163,10 @@ export const UploadIcon = (p: IconProps) => (
     <line x1="12" y1="3" x2="12" y2="15" />
   </Icon>
 );
+
+export const ArrowLeftIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
+  </Icon>
+);
