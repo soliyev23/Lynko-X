@@ -6,6 +6,7 @@ import {
   ArrowRightIcon,
   BarChartIcon,
   CheckIcon,
+  ChevronDownIcon,
   LayersIcon,
   MenuIcon,
   MoonIcon,
@@ -18,6 +19,7 @@ import {
   ZapIcon,
 } from "@/components/icons";
 import { CONTENT, LANG_COOKIE, type Locale } from "@/lib/landing-content";
+import LanguageDialog from "@/components/landing/LanguageDialog";
 
 const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_URL ?? "http://localhost:3000";
 
@@ -46,6 +48,7 @@ function persistLocale(l: Locale) {
 export default function LandingView({ locale }: { locale: Locale }) {
   const [dark, setDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const c = CONTENT[locale];
 
   useEffect(() => {
@@ -104,21 +107,17 @@ export default function LandingView({ locale }: { locale: Locale }) {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3 lg:justify-self-end">
-            <div className="flex items-center rounded-lg border border-gray-200 dark:border-gray-700 p-0.5 text-xs font-semibold">
-              {(["uz", "ru"] as Locale[]).map((l) => (
-                <button
-                  key={l}
-                  onClick={() => changeLocale(l)}
-                  className={`px-2 py-1 rounded-md uppercase transition ${
-                    locale === l
-                      ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
+            <button
+              type="button"
+              onClick={() => setLangOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={langOpen}
+              aria-label={c.nav.language}
+              className="inline-flex items-center gap-1 h-9 rounded-lg border border-gray-200 dark:border-gray-700 pl-3 pr-2 text-sm font-semibold uppercase text-gray-700 dark:text-gray-200 hover:border-emerald-500 transition"
+            >
+              {locale}
+              <ChevronDownIcon size={15} className="text-gray-500 dark:text-gray-400" />
+            </button>
             <button
               onClick={toggleDark}
               aria-label={dark ? c.nav.lightMode : c.nav.darkMode}
@@ -325,6 +324,18 @@ export default function LandingView({ locale }: { locale: Locale }) {
           </div>
         </div>
       </footer>
+
+      <LanguageDialog
+        open={langOpen}
+        locale={locale}
+        title={c.nav.language}
+        closeLabel={c.nav.close}
+        onClose={() => setLangOpen(false)}
+        onSelect={(l) => {
+          if (l === locale) setLangOpen(false);
+          else changeLocale(l);
+        }}
+      />
     </div>
   );
 }

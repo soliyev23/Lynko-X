@@ -227,3 +227,9 @@ export const MenuIcon = (p: IconProps) => (
     <line x1="4" y1="18" x2="20" y2="18" />
   </Icon>
 );
+
+export const ChevronDownIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <polyline points="6 9 12 15 18 9" />
+  </Icon>
+);

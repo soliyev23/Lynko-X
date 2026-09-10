@@ -2,6 +2,12 @@
 
 export type Locale = "uz" | "ru";
 export const LOCALES: Locale[] = ["uz", "ru"];
+
+// Til tanlash oynasidagi ro'yxat (nomlar o'z tilida yoziladi)
+export const LANGUAGES: { code: Locale; label: string }[] = [
+  { code: "uz", label: "O'zbek" },
+  { code: "ru", label: "Русский" },
+];
 export const LANG_COOKIE = "lynkox_lang";
 
 export function isLocale(v: unknown): v is Locale {
@@ -25,6 +31,8 @@ export interface Content {
     login: string;
     open: string;
     menu: string;
+    language: string;
+    close: string;
     lightMode: string;
     darkMode: string;
   };
@@ -55,6 +63,8 @@ export const CONTENT: Record<Locale, Content> = {
       login: "Kirish",
       open: "Do'kon ochish",
       menu: "Menyu",
+      language: "Sayt tili",
+      close: "Yopish",
       lightMode: "Yorug' rejim",
       darkMode: "Qorong'i rejim",
     },
@@ -166,6 +176,8 @@ export const CONTENT: Record<Locale, Content> = {
       login: "Войти",
       open: "Открыть магазин",
       menu: "Меню",
+      language: "Язык сайта",
+      close: "Закрыть",
       lightMode: "Светлая тема",
       darkMode: "Тёмная тема",
     },
