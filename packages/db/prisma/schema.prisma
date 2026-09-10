@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ Merchant (do'kon egasi) ============
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  stores       Store[]
+}
+
+// ============ Tenant: har bir do'kon ============
+
+model Store {
+  id          String     @id @default(cuid())
+  slug        String     @unique // subdomen: {slug}.lynko-x.uz — hozircha /{slug}
+  name        String
+  description String?
+  phone       String?
+  telegram    String?
+  logoUrl     String?
+  currency    String     @default("UZS")
+  locale      String     @default("uz")
+  deliveryFee Int        @default(0) // so'mda
+  isActive    Boolean    @default(true)
+  ownerId     String
+  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products    Product[]
+  categories  Category[]
+  orders      Order[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  storeId  String
+  store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name     String
+  slug     String
+  products Product[]
+
+  @@unique([storeId, slug])
+}
+
+model Product {
+  id           String           @id @default(cuid())
+  storeId      String
+  store        Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  categoryId   String?
+  category     Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  name         String
+  slug         String
+  description  String?
+  price        Int // so'mda (UZS tiyin ishlatilmaydi)
+  comparePrice Int? // chegirmagacha bo'lgan narx
+  stock        Int              @default(0) // variantlari bo'lsa, ombor variantlar bo'yicha yuritiladi
+  images       String[]
+  isActive     Boolean          @default(true)
+  variants     ProductVariant[]
+  orderItems   OrderItem[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@unique([storeId, slug])
+  @@index([storeId, isActive])
+}
+
+// Variant: bitta mahsulotning rang/o'lcham kabi turlari.
+// price = null bo'lsa, mahsulotning asosiy narxi amal qiladi.
+model ProductVariant {
+  id         String      @id @default(cuid())
+  productId  String
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name       String // masalan: "Qizil / L"
+  price      Int?
+  stock      Int         @default(0)
+  sortOrder  Int         @default(0)
+  orderItems OrderItem[]
+
+  @@index([productId])
+}
+
+// ============ Buyurtmalar ============
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH_ON_DELIVERY
+  ONLINE_MOCK
+  PAYME
+  CLICK
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  number        Int // do'kon ichida tartib raqam: #1001, #1002...
+  storeId       String
+  store         Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  status        OrderStatus   @default(NEW)
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod
+  customerName  String
+  phone         String
+  address       String?
+  note          String?
+  subtotal      Int
+  deliveryFee   Int           @default(0)
+  total         Int
+  items         OrderItem[]
+  payments      Payment[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([storeId, number])
+  @@index([storeId, status])
+}
+
+model OrderItem {
+  id        String          @id @default(cuid())
+  orderId   String
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String?
+  product   Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  name      String // buyurtma paytidagi nom (snapshot, variant nomi bilan)
+  price     Int // buyurtma paytidagi narx (snapshot)
+  quantity  Int
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  orderId       String
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider      String // "mock" | "payme" | "click"
+  amount        Int
+  status        PaymentStatus @default(PENDING)
+  providerTxnId String?
+  raw           Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}

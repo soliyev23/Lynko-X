@@ -1,0 +1,20 @@
+{
+  "name": "lynko-x",
+  "private": true,
+  "version": "0.1.0",
+  "description": "LYNKO-X — O'zbekiston uchun e-commerce SaaS platformasi (Shopify alternativi)",
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:api": "pnpm --filter @lynko-x/api dev",
+    "dev:admin": "pnpm --filter @lynko-x/admin dev",
+    "dev:storefront": "pnpm --filter @lynko-x/storefront dev",
+    "build": "pnpm --filter @lynko-x/db generate && pnpm --filter \"./apps/*\" build",
+    "db:generate": "pnpm --filter @lynko-x/db generate",
+    "db:migrate": "pnpm --filter @lynko-x/db migrate",
+    "db:seed": "pnpm --filter @lynko-x/db seed",
+    "db:studio": "pnpm --filter @lynko-x/db studio"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
