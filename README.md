@@ -1,6 +1,6 @@
 # LYNKO-X — O'zbekiston uchun e-commerce SaaS platformasi
 
-Shopify modelidagi multi-tenant platforma: har bir savdogar o'z onlayn-do'konini ochadi,
+Multi-tenant SaaS platforma: har bir savdogar o'z onlayn-do'konini ochadi,
 LYNKO-X jamoasi esa platforma admin-panelidan barcha do'konlarni boshqaradi.
 
 ## Arxitektura

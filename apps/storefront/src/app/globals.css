@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Dark rejim <html class="dark"> orqali boshqariladi (bosh sahifa tugmasi) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Standart (Classic) qiymatlar — do'kon shabloni theme-root'da ularni qayta belgilaydi */
 :root {
   --bg: #fafafa;
