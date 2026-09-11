@@ -107,7 +107,7 @@ export default function PlatformStoresPage() {
                   <a
                     href={`http://localhost:3001/${s.slug}`}
                     target="_blank"
-                    className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline"
+                    className="mt-0.5 flex w-fit items-center gap-1 text-xs text-gray-400 hover:text-indigo-600"
                   >
                     /{s.slug}
                     <ExternalLinkIcon size={11} />

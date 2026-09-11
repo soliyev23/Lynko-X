@@ -15,7 +15,7 @@ export function compact(n: number): string {
   if (abs >= 1e9) return (n / 1e9).toFixed(1).replace(/\.0$/, "") + " mlrd";
   if (abs >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, "") + " mln";
   if (abs >= 1e3) return Math.round(n / 1e3) + " ming";
-  return String(Math.round(n));
+  return Number.isInteger(n) ? String(n) : String(Math.round(n * 10) / 10);
 }
 
 /** "2026-09-11" -> "11.09" */
@@ -53,11 +53,13 @@ export function BarChart({
   height = 180,
   format = compact,
   tooltipValue,
+  emptyText = "—",
 }: {
   data: BarPoint[];
   height?: number;
   format?: (v: number) => string;
   tooltipValue?: (p: BarPoint) => string;
+  emptyText?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(600);
@@ -73,13 +75,16 @@ export function BarChart({
     return () => ro.disconnect();
   }, []);
 
-  const padL = 52;
+  const empty = data.every((d) => d.value === 0);
+  const max = niceCeil(Math.max(0, ...data.map((d) => d.value)));
+  const ticks = empty ? [0] : [0, max / 2, max];
+  // Chap bo'shliq eng uzun belgi ("500 ming") sig'adigan qilib hisoblanadi
+  const padL = Math.max(36, 14 + Math.max(...ticks.map((t) => format(t).length)) * 6.6);
   const padR = 8;
   const padT = 12;
   const padB = 24;
   const innerW = width - padL - padR;
   const innerH = height - padT - padB;
-  const max = niceCeil(Math.max(0, ...data.map((d) => d.value)));
   const slot = data.length ? innerW / data.length : innerW;
   const barW = Math.max(3, Math.min(24, slot - 2));
   const baseY = padT + innerH;
@@ -91,7 +96,7 @@ export function BarChart({
   return (
     <div ref={ref} className="relative w-full select-none">
       <svg width={width} height={height} className="block">
-        {[0, max / 2, max].map((t) => (
+        {ticks.map((t) => (
           <g key={t}>
             <line
               x1={padL}
@@ -150,6 +155,11 @@ export function BarChart({
           );
         })}
       </svg>
+      {empty && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-center text-sm text-gray-400" style={{ height: padT + innerH }}>
+          {emptyText}
+        </div>
+      )}
       {hovered && hover != null && (
         <div
           className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg bg-gray-900 text-white px-2.5 py-1.5 shadow-lg whitespace-nowrap"
@@ -269,15 +279,20 @@ export function Panel({
   action,
   children,
   className = "",
+  flush = false,
 }: {
   title: ReactNode;
   action?: ReactNode;
   children: ReactNode;
   className?: string;
+  /** Jadval kabi chetgacha cho'ziladigan tana uchun: sarlavha o'z paddingi bilan, tana paddingsiz */
+  flush?: boolean;
 }) {
   return (
-    <section className={`bg-white rounded-2xl border border-gray-200 p-5 ${className}`}>
-      <div className="flex items-center justify-between mb-4">
+    <section
+      className={`bg-white rounded-2xl border border-gray-200 ${flush ? "overflow-hidden" : "p-5"} ${className}`}
+    >
+      <div className={`flex items-center justify-between gap-4 ${flush ? "px-5 pt-5 pb-3" : "mb-4"}`}>
         <h2 className="font-semibold">{title}</h2>
         {action}
       </div>

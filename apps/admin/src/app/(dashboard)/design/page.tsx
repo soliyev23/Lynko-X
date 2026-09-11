@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { THEME_OPTIONS, type ThemeOption } from "@/lib/themes";
 import { ImageUploader } from "@/components/ImageUploader";
 import { ThemePreview } from "@/components/ThemePreview";
-import { CheckIcon, ExternalLinkIcon } from "@/components/icons";
+import { CheckIcon, ExternalLinkIcon, XIcon } from "@/components/icons";
 
 interface StoreDesign {
   slug: string;
@@ -127,16 +127,26 @@ function DesignPageInner() {
       <p className="text-xs text-gray-500 mb-3">{t("bannerHint")}</p>
       <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-8">
         {store.bannerUrl && (
-          <img
-            src={store.bannerUrl}
-            alt=""
-            className="w-full aspect-[8/3] object-cover rounded-xl mb-4 bg-gray-100"
-          />
+          <div className="relative mb-4">
+            <img
+              src={store.bannerUrl}
+              alt=""
+              className="w-full aspect-[8/3] object-cover rounded-xl bg-gray-100"
+            />
+            <button
+              type="button"
+              onClick={() => save({ bannerUrl: "" })}
+              className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-lg bg-white/95 border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:text-red-600 hover:border-red-300"
+            >
+              <XIcon size={13} />
+              {t("delete")}
+            </button>
+          </div>
         )}
         <ImageUploader
           single
-          images={store.bannerUrl ? [store.bannerUrl] : []}
-          onChange={(images) => save({ bannerUrl: images[0] ?? "" })}
+          images={[]}
+          onChange={(images) => images[0] && save({ bannerUrl: images[0] })}
         />
       </div>
 

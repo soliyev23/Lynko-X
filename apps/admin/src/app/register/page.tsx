@@ -1,5 +1,6 @@
 "use client";
 
+import { Logo } from "@/components/Logo";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -61,7 +62,9 @@ export default function RegisterPage() {
         className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 w-full max-w-md space-y-4"
       >
         <div className="text-center mb-6">
-          <div className="text-3xl font-bold text-indigo-600">LYNKO-X</div>
+          <div className="flex justify-center">
+            <Logo size={36} textClassName="text-2xl" />
+          </div>
           <div className="text-gray-500 mt-1">{t("createStore")}</div>
         </div>
         {error && (

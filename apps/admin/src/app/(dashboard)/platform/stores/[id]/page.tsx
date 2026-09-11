@@ -172,10 +172,10 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
 
       <div className="grid lg:grid-cols-2 gap-4">
         <Panel title={t("dailyRevenue")} action={<span className="text-xs text-gray-400">{t("last30")}</span>}>
-          <BarChart data={an.daily.map((d) => ({ label: shortDay(d.day), title: longDay(d.day), value: d.revenue }))} tooltipValue={(p) => money(p.value)} />
+          <BarChart emptyText={t("noData")} data={an.daily.map((d) => ({ label: shortDay(d.day), title: longDay(d.day), value: d.revenue }))} tooltipValue={(p) => money(p.value)} />
         </Panel>
         <Panel title={t("dailyOrders")} action={<span className="text-xs text-gray-400">{t("last30")}</span>}>
-          <BarChart data={an.daily.map((d) => ({ label: shortDay(d.day), title: longDay(d.day), value: d.orders }))} format={(v) => String(v)} />
+          <BarChart emptyText={t("noData")} data={an.daily.map((d) => ({ label: shortDay(d.day), title: longDay(d.day), value: d.orders }))} format={(v) => String(v)} />
         </Panel>
       </div>
 
@@ -205,8 +205,8 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
         </Panel>
       </div>
 
-      <Panel title={`${t("products")} (${products.length})`} className="!p-0 overflow-hidden">
-        <table className="w-full text-sm -mt-4">
+      <Panel title={`${t("products")} (${products.length})`} flush>
+        <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500">
             <tr>
               <th className="text-left px-5 py-3 font-medium">{t("name")}</th>
@@ -245,8 +245,8 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
         </table>
       </Panel>
 
-      <Panel title={t("recentOrders")} className="!p-0 overflow-hidden">
-        <table className="w-full text-sm -mt-4">
+      <Panel title={t("recentOrders")} flush>
+        <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500">
             <tr>
               <th className="text-left px-5 py-3 font-medium">#</th>

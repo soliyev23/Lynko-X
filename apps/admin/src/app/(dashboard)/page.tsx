@@ -137,6 +137,7 @@ export default function DashboardPage() {
       <div className="grid lg:grid-cols-2 gap-4">
         <Panel title={t("dailyRevenue")} action={<span className="text-xs text-gray-400">{t("last30")}</span>}>
           <BarChart
+            emptyText={t("noData")}
             data={data.daily.map((d) => ({
               label: shortDay(d.day),
               title: longDay(d.day),
@@ -147,6 +148,7 @@ export default function DashboardPage() {
         </Panel>
         <Panel title={t("dailyOrders")} action={<span className="text-xs text-gray-400">{t("last30")}</span>}>
           <BarChart
+            emptyText={t("noData")}
             data={data.daily.map((d) => ({
               label: shortDay(d.day),
               title: longDay(d.day),
@@ -218,9 +220,9 @@ export default function DashboardPage() {
             {t("viewAll")}
           </Link>
         }
-        className="!p-0 overflow-hidden"
+        flush
       >
-        <table className="w-full text-sm -mt-4">
+        <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500">
             <tr>
               <th className="text-left px-5 py-3 font-medium">#</th>

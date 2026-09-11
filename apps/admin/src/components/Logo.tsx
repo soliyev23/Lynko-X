@@ -1,6 +1,26 @@
 import { useId } from "react";
 
 // LYNKO-X belgisi (bosh sahifadagi bilan bir xil): yashil gradientli kvadrat ichida "L" va "x"
+// Belgi + yozuv
+export function Logo({
+  size = 30,
+  textClassName = "text-xl",
+  className = "",
+}: {
+  size?: number;
+  textClassName?: string;
+  className?: string;
+}) {
+  return (
+    <span className={`inline-flex items-center gap-2.5 ${className}`}>
+      <LogoMark size={size} className="shrink-0" />
+      <span className={`font-extrabold tracking-tight leading-none text-gray-900 ${textClassName}`}>
+        LYNKO<span className="text-emerald-600">-X</span>
+      </span>
+    </span>
+  );
+}
+
 export function LogoMark({ size = 30, className = "" }: { size?: number; className?: string }) {
   const id = useId();
   const grad = `lx-grad-${id}`;

@@ -79,7 +79,7 @@ export default function PlatformStatsPage() {
         <p className="text-sm text-gray-500 mt-1">{t("last30")}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4">
         <StatTile
           label={t("revenue30")}
           value={money(an.period.revenue30)}
@@ -106,12 +106,14 @@ export default function PlatformStatsPage() {
       <div className="grid lg:grid-cols-3 gap-4">
         <Panel title={t("dailyRevenue")} className="lg:col-span-2">
           <BarChart
+            emptyText={t("noData")}
             data={an.daily.map((d) => ({ label: shortDay(d.day), title: longDay(d.day), value: d.revenue }))}
             tooltipValue={(p) => money(p.value)}
           />
         </Panel>
         <Panel title={t("newStoresDaily")}>
           <BarChart
+            emptyText={t("noData")}
             data={an.newStores.map((d) => ({ label: shortDay(d.day), title: longDay(d.day), value: d.count }))}
             format={(v) => String(v)}
           />
@@ -121,6 +123,7 @@ export default function PlatformStatsPage() {
       <div className="grid lg:grid-cols-3 gap-4">
         <Panel title={t("dailyOrders")}>
           <BarChart
+            emptyText={t("noData")}
             data={an.daily.map((d) => ({ label: shortDay(d.day), title: longDay(d.day), value: d.orders }))}
             format={(v) => String(v)}
             height={150}
@@ -144,8 +147,8 @@ export default function PlatformStatsPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
-        <Panel title={t("topStores")} className="!p-0 overflow-hidden">
-          <table className="w-full text-sm -mt-4">
+        <Panel title={t("topStores")} flush>
+          <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-500">
               <tr>
                 <th className="text-left px-5 py-3 font-medium">{t("name")}</th>
@@ -176,9 +179,9 @@ export default function PlatformStatsPage() {
         <Panel
           title={t("latestStores")}
           action={<Link href="/platform/stores" className="text-sm text-indigo-600 hover:underline">{t("viewAll")}</Link>}
-          className="!p-0 overflow-hidden"
+          flush
         >
-          <table className="w-full text-sm -mt-4">
+          <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-500">
               <tr>
                 <th className="text-left px-5 py-3 font-medium">{t("name")}</th>
