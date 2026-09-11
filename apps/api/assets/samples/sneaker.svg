@@ -1,9 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
   <rect width="800" height="800" fill="#ecfdf5"/>
   <circle cx="400" cy="420" r="250" fill="#d1fae5"/>
-  <path d="M150 520 C150 470 200 450 260 440 L330 380 C360 355 390 350 420 370 L520 440 C580 470 640 480 660 520 L660 560 L150 560 Z" fill="#ffffff" stroke="#a7f3d0" stroke-width="10" stroke-linejoin="round"/>
-  <path d="M150 560 L660 560 L660 590 Q660 610 640 610 L170 610 Q150 610 150 590 Z" fill="#059669"/>
-  <path d="M330 380 L470 480" fill="none" stroke="#a7f3d0" stroke-width="10" stroke-linecap="round"/>
-  <path d="M360 405 L400 440 M395 385 L435 420 M430 365 L470 400" fill="none" stroke="#6ee7b7" stroke-width="10" stroke-linecap="round"/>
-  <path d="M480 450 C520 440 560 460 600 500" fill="none" stroke="#059669" stroke-width="14" stroke-linecap="round"/>
+  <!-- ustki qism -->
+  <path d="M140 500 L140 470 C140 440 160 425 200 420 L280 410 L330 330 C345 305 370 300 395 312 L470 352 C500 368 540 380 590 386 C640 392 670 420 670 460 L670 500 Z" fill="#ffffff" stroke="#6ee7b7" stroke-width="10" stroke-linejoin="round"/>
+  <!-- tovon va oldi qismi -->
+  <path d="M140 500 L140 470 C140 440 160 425 200 420 L240 415 L240 500 Z" fill="#a7f3d0"/>
+  <path d="M470 352 C500 368 540 380 590 386 C640 392 670 420 670 460 L670 500 L520 500 Z" fill="#a7f3d0"/>
+  <!-- bog'ichlar -->
+  <path d="M300 415 L360 395 M320 440 L385 420 M340 465 L410 445" fill="none" stroke="#059669" stroke-width="12" stroke-linecap="round"/>
+  <!-- yon chiziq -->
+  <path d="M250 470 C330 430 400 440 480 470" fill="none" stroke="#059669" stroke-width="14" stroke-linecap="round"/>
+  <!-- taglik -->
+  <path d="M120 500 L680 500 C700 500 710 512 710 530 L710 545 C710 565 695 580 675 580 L145 580 C125 580 110 565 110 545 L110 530 C110 512 120 500 120 500 Z" fill="#059669"/>
+  <path d="M130 545 L690 545" stroke="#34d399" stroke-width="8" stroke-linecap="round"/>
 </svg>
