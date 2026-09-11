@@ -19,6 +19,7 @@ import {
 } from "@/components/icons";
 import { CONTENT, LANG_COOKIE, type Locale } from "@/lib/landing-content";
 import LanguageMenu from "@/components/landing/LanguageMenu";
+import { Logo } from "@/components/Logo";
 
 const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_URL ?? "http://localhost:3000";
 
@@ -146,9 +147,10 @@ export default function LandingView({ locale }: { locale: Locale }) {
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3 lg:grid lg:grid-cols-[1fr_auto_1fr]">
           <Link
             href="/"
-            className={`text-lg sm:text-xl font-bold whitespace-nowrap text-emerald-600 dark:text-emerald-400 lg:justify-self-start transition-opacity hover:opacity-80 rounded-md ${focusRing}`}
+            aria-label="LYNKO-X"
+            className={`group inline-flex items-center whitespace-nowrap lg:justify-self-start rounded-md ${focusRing}`}
           >
-            LYNKO-X
+            <Logo size={30} textClassName="text-lg sm:text-xl" />
           </Link>
 
           {/* Keng ekranda nav aniq markazda turadi (o'rta ustun) */}
@@ -420,8 +422,10 @@ export default function LandingView({ locale }: { locale: Locale }) {
 
       <footer className="border-t border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-gray-400">
-          <div>
-            <span className="font-bold text-emerald-600 dark:text-emerald-400">LYNKO-X</span> · {c.footer.tagline} · 2026
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+            <Logo size={22} textClassName="text-base" />
+            <span className="hidden sm:inline text-gray-300 dark:text-gray-700">|</span>
+            <span>{c.footer.tagline} · 2026</span>
           </div>
           <div className="flex gap-6">
             <a href="#features" className={footerLink}>{c.nav.features}</a>
