@@ -170,3 +170,18 @@ export const ArrowLeftIcon = (p: IconProps) => (
     <polyline points="12 19 5 12 12 5" />
   </Icon>
 );
+
+export const MenuIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <line x1="4" y1="6" x2="20" y2="6" />
+    <line x1="4" y1="12" x2="20" y2="12" />
+    <line x1="4" y1="18" x2="20" y2="18" />
+  </Icon>
+);
+
+export const ChevronsLeftIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <polyline points="11 17 6 12 11 7" />
+    <polyline points="18 17 13 12 18 7" />
+  </Icon>
+);
