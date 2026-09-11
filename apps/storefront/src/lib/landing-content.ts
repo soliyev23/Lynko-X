@@ -49,7 +49,14 @@ export interface Content {
   };
   features: { title: string; subtitle: string; items: { title: string; text: string }[] };
   how: { title: string; steps: { title: string; text: string }[] };
-  pricing: { title: string; subtitle: string; period: string; start: string; plans: Plan[] };
+  pricing: {
+    title: string;
+    subtitle: string;
+    period: string;
+    start: string;
+    popular: string;
+    plans: Plan[];
+  };
   cta: { title: string; text: string; button: string };
   footer: { tagline: string };
 }
@@ -134,6 +141,7 @@ export const CONTENT: Record<Locale, Content> = {
       subtitle: "Kichik boshlang, o'sganingizda oshiring. Sinov davrida barcha tariflar bepul.",
       period: "so'm / oy",
       start: "Boshlash",
+      popular: "Eng ommabop",
       plans: [
         {
           name: "Bepul",
@@ -247,6 +255,7 @@ export const CONTENT: Record<Locale, Content> = {
       subtitle: "Начните с малого, повышайте по мере роста. В тестовый период все тарифы бесплатны.",
       period: "сум / мес",
       start: "Начать",
+      popular: "Популярный",
       plans: [
         {
           name: "Бесплатный",

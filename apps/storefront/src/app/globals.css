@@ -141,3 +141,99 @@ body {
 .t-stepper button:hover { color: var(--text); }
 
 .t-divider { border-color: var(--border); }
+
+/* ---- Bosh sahifa (landing) effektlari ---- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Nuqtali fon (hero va CTA) */
+.lp-grid {
+  --lp-dot: rgb(17 24 39 / 0.1);
+  background-image: radial-gradient(var(--lp-dot) 1px, transparent 1.5px);
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 72%);
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 72%);
+}
+.dark .lp-grid,
+.lp-grid-on-dark {
+  --lp-dot: rgb(255 255 255 / 0.09);
+}
+
+/* Sahifa ochilganda hero elementlari ketma-ket paydo bo'ladi */
+@keyframes lp-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lp-enter {
+  animation: lp-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Skroll qilganda bo'limlar ko'rinish maydoniga kirganda paydo bo'ladi */
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--lp-delay, 0ms),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--lp-delay, 0ms);
+}
+.lp-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hero orqasidagi yumshoq nur sekin "suzadi" */
+@keyframes lp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(16px);
+  }
+}
+.lp-float {
+  animation: lp-float 9s ease-in-out infinite;
+}
+
+/* Popover va mobil menyu paydo bo'lishi */
+@keyframes lp-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lp-pop {
+  animation: lp-pop 0.16s ease-out both;
+  transform-origin: top right;
+}
+.lp-drop {
+  animation: lp-pop 0.16s ease-out both;
+  transform-origin: top;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-enter,
+  .lp-float,
+  .lp-pop,
+  .lp-drop {
+    animation: none;
+  }
+  .lp-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
