@@ -7,6 +7,7 @@ import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import { LoginDto, RegisterDto } from "./dto";
+import { createSampleProducts } from "../common/sample-products";
 
 type SessionUser = {
   id: string;
@@ -35,16 +36,22 @@ export class AuthService {
     if (slugTaken)
       throw new ConflictException("Bu do'kon manzili (slug) band");
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        name: dto.name,
-        passwordHash: await bcrypt.hash(dto.password, 10),
-        stores: {
-          create: { name: dto.storeName, slug: dto.storeSlug },
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+    // Foydalanuvchi + do'kon + 5 ta namuna mahsulot bitta tranzaksiyada yaratiladi
+    const user = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email: dto.email,
+          name: dto.name,
+          passwordHash,
+          stores: {
+            create: { name: dto.storeName, slug: dto.storeSlug },
+          },
         },
-      },
-      include: { stores: true },
+        include: { stores: true },
+      });
+      await createSampleProducts(tx, created.stores[0].id);
+      return created;
     });
 
     return this.buildSession(user, user.stores[0]);

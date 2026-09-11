@@ -3,6 +3,7 @@ import { ValidationPipe } from "@nestjs/common";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import helmet from "helmet";
 import { AppModule } from "./app.module";
+import { join } from "node:path";
 import { UPLOAD_DIR } from "./uploads/uploads.controller";
 
 async function bootstrap() {
@@ -11,6 +12,11 @@ async function bootstrap() {
   app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
   app.enableCors({ origin: true });
   app.useStaticAssets(UPLOAD_DIR, { prefix: "/uploads/" });
+  // Namuna mahsulot rasmlari va boshqa statik fayllar
+  app.useStaticAssets(join(process.cwd(), "assets"), {
+    prefix: "/assets/",
+    maxAge: "7d",
+  });
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, transform: true }),
   );

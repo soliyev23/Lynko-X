@@ -86,7 +86,8 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen flex">
-      <aside className="w-64 bg-slate-900 text-white flex flex-col shrink-0">
+      {/* Sidebar ekranga yopishib turadi; faqat asosiy qism skroll bo'ladi */}
+      <aside className="w-64 bg-slate-900 text-white flex flex-col shrink-0 sticky top-0 h-screen overflow-y-auto">
         <div className="p-5 border-b border-slate-700">
           <div className="text-2xl font-bold text-indigo-400">LYNKO-X</div>
           {role === "ADMIN" ? (
@@ -162,7 +163,7 @@ export default function DashboardLayout({
           </button>
         </div>
       </aside>
-      <main className="flex-1 p-8 overflow-x-auto">{children}</main>
+      <main className="flex-1 min-w-0 p-8 overflow-x-auto">{children}</main>
     </div>
   );
 }
