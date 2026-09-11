@@ -55,7 +55,7 @@ export default function OrderDetailPage({
   if (!order) return <div className="text-gray-400">{t("loading")}</div>;
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-3xl mx-auto">
       <div className="flex items-center gap-4 mb-6 flex-wrap">
         <h1 className="text-2xl font-bold">
           {t("order")} #{order.number}

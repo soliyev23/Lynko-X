@@ -263,7 +263,7 @@ export default function DashboardLayout({
 
       {/* Kontent doim tor panel kengligida chapdan joy qoldiradi; panel ochilganda siljimaydi */}
       <main className="min-h-screen min-w-0 pl-16">
-        <div className="p-8 overflow-x-auto">{children}</div>
+        <div className="mx-auto w-full max-w-7xl p-8 overflow-x-auto">{children}</div>
       </main>
     </div>
   );

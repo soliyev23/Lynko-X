@@ -90,7 +90,7 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
     p.variants.length ? p.variants.reduce((s, v) => s + v.stock, 0) : p.stock;
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <Link href="/platform/stores" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900">
         <ArrowLeftIcon size={15} />
         {t("backToStores")}

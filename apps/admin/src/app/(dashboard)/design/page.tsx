@@ -50,7 +50,7 @@ function DesignPageInner() {
   if (!store) return <div className="text-gray-400">{t("loading")}</div>;
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-5xl mx-auto">
       {welcome && (
         <div className="bg-indigo-600 text-white rounded-2xl p-6 mb-8">
           <h2 className="text-xl font-bold">{t("welcomeTitle")}</h2>

@@ -87,7 +87,7 @@ export default function SettingsPage() {
   const limit = PLAN_LIMITS[form.plan];
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-2">{t("settings")}</h1>
       <p className="text-sm text-gray-500 mb-6">
         {t("viewStore")}:{" "}
