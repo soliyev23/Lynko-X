@@ -50,7 +50,8 @@ Manzillar va hisoblar:
 ## Asosiy imkoniyatlar
 
 - **Sotuvchi**: ro'yxatdan o'tish = do'kon ochish (yangi do'konga 5 ta namuna mahsulot
-  avtomatik qo'shiladi — `apps/api/src/common/sample-products.ts`); mahsulotlar (rasm yuklash, kategoriyalar,
+  avtomatik qo'shiladi — `apps/api/src/common/sample-products.ts`; mavjud bo'sh do'konlar uchun
+  `pnpm samples:backfill`); mahsulotlar (rasm yuklash, kategoriyalar,
   rang/o'lcham variantlari — har biriga alohida narx va ombor); buyurtmalar holati;
   do'kon sozlamalari; Telegram-bildirishnomalar (o'z boti orqali)
 - **Dizayn shablonlari** (`/design`): 5 ta tayyor ko'rinish — Classic, Minimal, Bold (qorong'i),
