@@ -17,6 +17,8 @@ import {
   shortDay,
 } from "@/components/charts";
 import { ExternalLinkIcon } from "@/components/icons";
+import { SubscriptionBadge, type SubscriptionInfo } from "@/components/badges";
+import { dateOnly, tpl } from "@/lib/format";
 
 interface Analytics {
   totals: { products: number; orders: number; newOrders: number; revenue: number };
@@ -44,7 +46,7 @@ interface Analytics {
     paymentStatus: string;
     createdAt: string;
   }[];
-  usage: { plan: string; products: number; limit: number | null };
+  usage: { plan: string; products: number; limit: number | null; subscription: SubscriptionInfo };
   store: { name: string; slug: string; theme: string; telegramConfigured: boolean };
 }
 
@@ -63,6 +65,14 @@ export default function DashboardPage() {
   const { totals, period, usage, store } = data;
   const nearLimit =
     usage.limit != null && usage.products >= Math.floor(usage.limit * 0.8);
+  const sub = usage.subscription;
+  // Obuna ogohlantirishi: muddati o'tgan yoki 7 kun ichida tugaydi
+  const subWarning =
+    sub.status === "EXPIRED"
+      ? tpl(t("subExpired"), { limit: sub.limit ?? 10 })
+      : sub.daysLeft != null && sub.daysLeft <= 7
+        ? tpl(t(sub.status === "TRIAL" ? "subTrialEnding" : "subExpiringSoon"), { n: sub.daysLeft })
+        : null;
 
   return (
     <div className="space-y-6">
@@ -81,8 +91,14 @@ export default function DashboardPage() {
         </a>
       </div>
 
-      {(nearLimit || !store.telegramConfigured) && (
+      {(subWarning || nearLimit || !store.telegramConfigured) && (
         <div className="space-y-2">
+          {subWarning && (
+            <div className={`flex items-center justify-between gap-4 rounded-xl px-4 py-3 text-sm border ${sub.status === "EXPIRED" ? "bg-red-50 border-red-200 text-red-800" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
+              <span>{subWarning} {t("subContact")}</span>
+              <Link href="/settings" className="font-medium underline whitespace-nowrap">{t("settings")}</Link>
+            </div>
+          )}
           {nearLimit && (
             <div className="flex items-center justify-between gap-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm">
               <span>{t("upgradeHint")}</span>
@@ -128,9 +144,13 @@ export default function DashboardPage() {
           <div className="mt-2">
             <Meter value={usage.products} max={usage.limit ?? Math.max(usage.products, 1)} />
           </div>
-          <div className="text-xs text-gray-400 mt-1.5">
-            {t("currentPlan")}: {t(`plan_${usage.plan}` as TKey)}
+          <div className="flex items-center justify-between gap-2 text-xs text-gray-400 mt-1.5">
+            <span>{t("currentPlan")}: {t(`plan_${sub.plan}` as TKey)}</span>
+            <SubscriptionBadge status={sub.status} />
           </div>
+          {sub.expiresAt && sub.status !== "EXPIRED" && (
+            <div className="text-xs text-gray-400 mt-1">{dateOnly(sub.expiresAt)} · {tpl(t("daysLeft"), { n: sub.daysLeft ?? 0 })}</div>
+          )}
         </div>
       </div>
 

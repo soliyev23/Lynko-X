@@ -52,7 +52,7 @@ export class StoresService {
     const data = await storeAnalytics(this.prisma, store.id);
     return {
       ...data,
-      usage: planUsage(store.plan, data.totals.products),
+      usage: planUsage(store, data.totals.products),
       store: {
         name: store.name,
         slug: store.slug,

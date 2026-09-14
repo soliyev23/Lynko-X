@@ -7,8 +7,24 @@ import {
   planUsage,
   storeAnalytics,
 } from "../common/analytics";
-import { PLANS } from "../common/plans";
-import { AdminUpdateStoreDto } from "./dto";
+import {
+  EXPIRING_SOON_DAYS,
+  PLANS,
+  PLAN_PRICES,
+  addDays,
+  addMonths,
+  effectivePlan,
+  subscriptionInfo,
+} from "../common/plans";
+import { AddPlanPaymentDto, AdminUpdateStoreDto } from "./dto";
+
+const SUB_SELECT = {
+  id: true,
+  plan: true,
+  planExpiresAt: true,
+  isTrial: true,
+  isActive: true,
+} as const;
 
 /** LYNKO-X platforma egasi uchun: barcha do'konlar, sotuvchilar va tahlil. */
 @Injectable()
@@ -71,7 +87,9 @@ export class AdminService {
             FROM "Store"
             WHERE "createdAt" >= now() - interval '30 days'
             GROUP BY 1 ORDER BY 1`),
-        this.prisma.store.groupBy({ by: ["plan"], _count: { _all: true } }),
+        this.prisma.store.findMany({
+          select: { plan: true, planExpiresAt: true, isTrial: true },
+        }),
         this.prisma.order.groupBy({ by: ["status"], _count: { _all: true } }),
         this.prisma.$queryRaw<
           { id: string; name: string; slug: string; plan: string; orders: number; revenue: number }[]
@@ -110,7 +128,7 @@ export class AdminService {
       newStores: fillCounts(newStores),
       planBreakdown: PLANS.map((plan) => ({
         plan,
-        count: planRows.find((r) => r.plan === plan)?._count._all ?? 0,
+        count: planRows.filter((s) => effectivePlan(s) === plan).length,
       })),
       statusBreakdown: statusRows.map((r) => ({
         status: r.status,
@@ -128,8 +146,8 @@ export class AdminService {
     };
   }
 
-  listStores(search?: string) {
-    return this.prisma.store.findMany({
+  async listStores(search?: string) {
+    const stores = await this.prisma.store.findMany({
       where: search
         ? {
             OR: [
@@ -144,6 +162,8 @@ export class AdminService {
         name: true,
         slug: true,
         plan: true,
+        planExpiresAt: true,
+        isTrial: true,
         theme: true,
         isActive: true,
         phone: true,
@@ -153,6 +173,7 @@ export class AdminService {
       },
       orderBy: { createdAt: "desc" },
     });
+    return stores.map((s) => ({ ...s, subscription: subscriptionInfo(s) }));
   }
 
   /** Do'konning to'liq kartasi: ma'lumotlari, egasi, tahlili, mahsulotlari. */
@@ -166,8 +187,14 @@ export class AdminService {
     });
     if (!store) throw new NotFoundException("Do'kon topilmadi");
 
-    const [analytics, products] = await Promise.all([
+    const [analytics, payments, products] = await Promise.all([
       storeAnalytics(this.prisma, id),
+      this.prisma.planPayment.findMany({
+        where: { storeId: id },
+        orderBy: { paidAt: "desc" },
+        take: 50,
+        include: { createdBy: { select: { name: true } } },
+      }),
       this.prisma.product.findMany({
         where: { storeId: id },
         take: 100,
@@ -194,20 +221,175 @@ export class AdminService {
         ...safe,
         telegramConfigured: Boolean(telegramBotToken && telegramChatId),
       },
-      usage: planUsage(store.plan, store._count.products),
+      usage: planUsage(store, store._count.products),
+      subscription: subscriptionInfo(store),
       analytics,
       products,
+      payments,
     };
   }
 
   async updateStore(id: string, dto: AdminUpdateStoreDto) {
     const store = await this.prisma.store.findUnique({ where: { id } });
     if (!store) throw new NotFoundException("Do'kon topilmadi");
-    return this.prisma.store.update({
+    const data: Prisma.StoreUpdateInput = {};
+    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+    if (dto.plan !== undefined) {
+      data.plan = dto.plan;
+      if (dto.plan === "FREE") {
+        data.planExpiresAt = null;
+        data.isTrial = false;
+      }
+    }
+    if (dto.planExpiresAt !== undefined)
+      data.planExpiresAt = dto.planExpiresAt ? new Date(dto.planExpiresAt) : null;
+    if (dto.isTrial !== undefined) data.isTrial = dto.isTrial;
+    const updated = await this.prisma.store.update({
       where: { id },
-      data: dto,
-      select: { id: true, plan: true, isActive: true },
+      data,
+      select: SUB_SELECT,
     });
+    return { ...updated, subscription: subscriptionInfo(updated) };
+  }
+
+  /**
+   * Qo'lda to'lov: yozuv saqlanadi va do'kon tarifi/muddati yangilanadi.
+   * Xuddi shu pullik tarif hali tugamagan bo'lsa (sinov emas), yangi davr
+   * eski muddat oxiridan boshlanadi; aks holda hozirdan.
+   */
+  async addPayment(storeId: string, dto: AddPlanPaymentDto, adminId: string) {
+    const store = await this.prisma.store.findUnique({ where: { id: storeId } });
+    if (!store) throw new NotFoundException("Do'kon topilmadi");
+    const now = new Date();
+    const paidAt = dto.paidAt ? new Date(dto.paidAt) : now;
+    const continues =
+      store.plan === dto.plan &&
+      !store.isTrial &&
+      store.planExpiresAt != null &&
+      store.planExpiresAt.getTime() > now.getTime();
+    const periodStart = continues ? (store.planExpiresAt as Date) : now;
+    const periodEnd = addMonths(periodStart, dto.months);
+    const [payment, updated] = await this.prisma.$transaction([
+      this.prisma.planPayment.create({
+        data: {
+          storeId,
+          plan: dto.plan,
+          amount: dto.amount,
+          method: dto.method,
+          months: dto.months,
+          paidAt,
+          periodStart,
+          periodEnd,
+          note: dto.note?.trim() || null,
+          createdById: adminId,
+        },
+        include: { createdBy: { select: { name: true } } },
+      }),
+      this.prisma.store.update({
+        where: { id: storeId },
+        data: { plan: dto.plan, planExpiresAt: periodEnd, isTrial: false },
+        select: SUB_SELECT,
+      }),
+    ]);
+    return { payment, store: { ...updated, subscription: subscriptionInfo(updated) } };
+  }
+
+  /** Xato yozilgan to'lovni o'chirish. Muddat avtomatik qayta hisoblanmaydi — admin qo'lda to'g'rilaydi. */
+  async deletePayment(storeId: string, paymentId: string) {
+    const payment = await this.prisma.planPayment.findFirst({
+      where: { id: paymentId, storeId },
+    });
+    if (!payment) throw new NotFoundException("To'lov topilmadi");
+    await this.prisma.planPayment.delete({ where: { id: paymentId } });
+    return { ok: true };
+  }
+
+  /** Obuna va to'lovlar bo'yicha umumiy ko'rinish (owner-panel "To'lovlar" sahifasi). */
+  async billing() {
+    const now = new Date();
+    const soon = addDays(now, EXPIRING_SOON_DAYS);
+    const from = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1));
+    const [paidStores, totalStores, monthRows, allTime, recentPayments] =
+      await Promise.all([
+        this.prisma.store.findMany({
+          where: { plan: { not: "FREE" } },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            phone: true,
+            plan: true,
+            planExpiresAt: true,
+            isTrial: true,
+            owner: { select: { name: true, email: true } },
+          },
+        }),
+        this.prisma.store.count(),
+        this.prisma.$queryRaw<{ month: Date; amount: number; count: number }[]>(
+          Prisma.sql`
+            SELECT date_trunc('month', "paidAt") AS month,
+                   COALESCE(SUM(amount), 0)::float8 AS amount,
+                   COUNT(*)::int AS count
+            FROM "PlanPayment"
+            WHERE "paidAt" >= ${from}
+            GROUP BY 1 ORDER BY 1`,
+        ),
+        this.prisma.planPayment.aggregate({ _sum: { amount: true }, _count: { _all: true } }),
+        this.prisma.planPayment.findMany({
+          orderBy: { paidAt: "desc" },
+          take: 30,
+          include: {
+            store: { select: { id: true, name: true, slug: true } },
+            createdBy: { select: { name: true } },
+          },
+        }),
+      ]);
+
+    const subs = paidStores.map((s) => ({ ...s, subscription: subscriptionInfo(s, now) }));
+    const trial = subs.filter((s) => s.subscription.status === "TRIAL").length;
+    const active = subs.filter((s) => s.subscription.status === "ACTIVE").length;
+    const expired = subs.filter((s) => s.subscription.status === "EXPIRED");
+    const expiringSoon = subs
+      .filter((s) => {
+        const e = s.subscription.expiresAt;
+        return e != null && e.getTime() > now.getTime() && e.getTime() <= soon.getTime();
+      })
+      .sort((a, b) => a.subscription.expiresAt!.getTime() - b.subscription.expiresAt!.getTime());
+
+    // So'nggi 12 oy, bo'sh oylar 0 bilan
+    const byMonth = new Map(
+      monthRows.map((r) => [new Date(r.month).toISOString().slice(0, 7), r]),
+    );
+    const months: { month: string; amount: number; count: number }[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+      const key = d.toISOString().slice(0, 7);
+      const row = byMonth.get(key);
+      months.push({ month: key, amount: row?.amount ?? 0, count: row?.count ?? 0 });
+    }
+    const thisMonth = months[months.length - 1]?.amount ?? 0;
+    const lastMonth = months[months.length - 2]?.amount ?? 0;
+
+    return {
+      totals: {
+        thisMonth,
+        lastMonth,
+        allTime: allTime._sum.amount ?? 0,
+        paymentsCount: allTime._count._all,
+        trial,
+        active,
+        expired: expired.length,
+        free: totalStores - paidStores.length,
+        stores: totalStores,
+      },
+      months,
+      expiringSoon,
+      expired: expired.sort(
+        (a, b) => b.subscription.expiresAt!.getTime() - a.subscription.expiresAt!.getTime(),
+      ),
+      recentPayments,
+      prices: PLAN_PRICES,
+    };
   }
 
   listUsers(search?: string) {

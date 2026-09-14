@@ -62,7 +62,12 @@ Manzillar va hisoblar:
   test-onlayn), buyurtmani raqam + telefon orqali kuzatish; SEO meta-teglar
 - **Platforma admini**: umumiy statistika, barcha do'konlar (tarifni o'zgartirish,
   bloklash/faollashtirish, qidiruv), foydalanuvchilar ro'yxati
-- **Tariflar**: FREE (10 mahsulot) · BASIC (100) · PRO (cheksiz) — limit serverda tekshiriladi
+- **Tariflar va obuna**: FREE (10 mahsulot, muddatsiz) · BASIC (100, 99 000 so'm/oy) · PRO (cheksiz,
+  249 000 so'm/oy). Yangi do'kon 14 kun PRO sinov oladi. Pullik tarif muddatli: muddat o'tsa do'kon
+  amalda FREE bo'ladi (vitrinada faqat birinchi 10 ta mahsulot ko'rinadi, yangisini qo'shib bo'lmaydi).
+  To'lov tizimi ulanmagan: admin `To'lovlar` sahifasi yoki do'kon kartasida to'lovni qo'lda yozadi
+  (naqd/karta/o'tkazma), muddat avtomatik uzayadi. Payme/Click keyin shu `PlanPayment` yozuvini
+  avtomatik yaratadi. Mantiq: `apps/api/src/common/plans.ts`
 - **Xavfsizlik**: JWT, rolga asoslangan guard'lar, helmet, rate-limit (120 so'rov/daqiqa),
   narx va ombor faqat serverda hisoblanadi (race-condition himoyasi)
 
@@ -82,6 +87,7 @@ Manzillar va hisoblar:
 - [x] Platforma admin-paneli
 - [x] Tariflar (limitlar) va marketing sahifa
 - [x] Qidiruv, sahifalash, SEO, buyurtma kuzatish
+- [x] Obuna: sinov, muddat, qo'lda to'lovlar, owner-panel "To'lovlar"
 - [ ] Payme/Click haqiqiy integratsiya (merchant hisob kerak)
 - [ ] Kuryer/yetkazib berish xizmatlari integratsiyasi
 - [ ] Tarif to'lovi (billing) — to'lov tizimi ulangach

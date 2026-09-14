@@ -9,7 +9,6 @@ import { PaymentBadge, StatusBadge } from "@/components/badges";
 import {
   BarChart,
   HBars,
-  Meter,
   Panel,
   StatTile,
   longDay,
@@ -17,6 +16,8 @@ import {
   shortDay,
 } from "@/components/charts";
 import { ArrowLeftIcon, CheckIcon, ExternalLinkIcon, XIcon } from "@/components/icons";
+import { SubscriptionBadge, type SubscriptionInfo } from "@/components/badges";
+import { SubscriptionCard, type PlanPayment } from "@/components/SubscriptionCard";
 
 interface StoreDetail {
   store: {
@@ -37,6 +38,8 @@ interface StoreDetail {
     _count: { products: number; orders: number; categories: number };
   };
   usage: { plan: string; products: number; limit: number | null };
+  subscription: SubscriptionInfo;
+  payments: PlanPayment[];
   analytics: {
     totals: { products: number; orders: number; newOrders: number; revenue: number };
     period: { orders30: number; revenue30: number; ordersPrev30: number; revenuePrev30: number };
@@ -56,7 +59,6 @@ interface StoreDetail {
   }[];
 }
 
-const PLANS = ["FREE", "BASIC", "PRO"] as const;
 const STATUS_ORDER = ["NEW", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"];
 
 export default function PlatformStoreDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -69,23 +71,38 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
     api<StoreDetail>(`/admin/stores/${id}`).then(setData).catch((e) => setError(e.message));
   }, [id]);
 
-  async function patch(body: { isActive?: boolean; plan?: string }) {
+  async function patch(body: { isActive?: boolean }) {
     setError("");
     try {
-      const u = await api<{ plan: StoreDetail["store"]["plan"]; isActive: boolean }>(
+      const u = await api<{ plan: StoreDetail["store"]["plan"]; isActive: boolean; subscription: SubscriptionInfo }>(
         `/admin/stores/${id}`,
         { method: "PATCH", body: JSON.stringify(body) },
       );
-      setData((d) => d ? { ...d, store: { ...d.store, plan: u.plan, isActive: u.isActive }, usage: { ...d.usage, plan: u.plan } } : d);
+      setData((d) => d ? { ...d, store: { ...d.store, plan: u.plan, isActive: u.isActive }, subscription: u.subscription } : d);
     } catch (e: any) {
       setError(e.message);
     }
   }
 
+  // Obuna kartasi o'zgarganda: tarif, holat, limit va to'lovlar ro'yxati yangilanadi
+  function applySub(next: { plan: StoreDetail["store"]["plan"]; isActive: boolean; subscription: SubscriptionInfo; payments: PlanPayment[] }) {
+    setData((d) =>
+      d
+        ? {
+            ...d,
+            store: { ...d.store, plan: next.plan, isActive: next.isActive },
+            subscription: next.subscription,
+            usage: { ...d.usage, plan: next.subscription.effectivePlan, limit: next.subscription.limit },
+            payments: next.payments,
+          }
+        : d,
+    );
+  }
+
   if (error && !data) return <div className="text-red-600">{error}</div>;
   if (!data) return <div className="text-gray-400">{t("loading")}</div>;
 
-  const { store, usage, analytics: an, products } = data;
+  const { store, usage, analytics: an, products, subscription, payments } = data;
   const stockOf = (p: StoreDetail["products"][number]) =>
     p.variants.length ? p.variants.reduce((s, v) => s + v.stock, 0) : p.stock;
 
@@ -111,6 +128,8 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
               <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${store.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                 {store.isActive ? t("activeLabel") : t("blocked")}
               </span>
+              <span className="text-xs text-gray-500">{t(`plan_${store.plan}` as TKey)}</span>
+              <SubscriptionBadge status={subscription.status} />
             </div>
             <a href={`http://localhost:3001/${store.slug}`} target="_blank" className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:underline mt-1">
               /{store.slug} <ExternalLinkIcon size={12} />
@@ -132,23 +151,6 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
         <div className="flex flex-col gap-3 shrink-0 lg:w-56">
-          <label className="block">
-            <span className="text-xs font-medium text-gray-500">{t("plan")}</span>
-            <select
-              value={store.plan}
-              onChange={(e) => patch({ plan: e.target.value })}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-sm"
-            >
-              {PLANS.map((p) => <option key={p} value={p}>{t(`plan_${p}` as TKey)}</option>)}
-            </select>
-          </label>
-          <div>
-            <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>{t("planUsage")}</span>
-              <span>{usage.products} / {usage.limit ?? t("unlimited")}</span>
-            </div>
-            <Meter value={usage.products} max={usage.limit ?? Math.max(usage.products, 1)} />
-          </div>
           <button
             onClick={() => patch({ isActive: !store.isActive })}
             className={`rounded-lg px-4 py-2 text-sm font-medium border transition ${
@@ -161,6 +163,17 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
           </button>
         </div>
       </div>
+
+      <SubscriptionCard
+        storeId={id}
+        plan={store.plan}
+        isActive={store.isActive}
+        subscription={subscription}
+        usage={usage}
+        payments={payments}
+        onChange={applySub}
+        onError={setError}
+      />
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <StatTile label={t("totalRevenue")} value={money(an.totals.revenue)} highlight />

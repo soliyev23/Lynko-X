@@ -8,6 +8,7 @@ import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import { LoginDto, RegisterDto } from "./dto";
 import { createSampleProducts } from "../common/sample-products";
+import { trialSubscription } from "../common/plans";
 
 type SessionUser = {
   id: string;
@@ -45,7 +46,7 @@ export class AuthService {
           name: dto.name,
           passwordHash,
           stores: {
-            create: { name: dto.storeName, slug: dto.storeSlug },
+            create: { name: dto.storeName, slug: dto.storeSlug, ...trialSubscription() },
           },
         },
         include: { stores: true },

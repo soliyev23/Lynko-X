@@ -6,6 +6,8 @@ import { api } from "@/lib/api";
 import { dateTime } from "@/lib/format";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { ExternalLinkIcon, SearchIcon } from "@/components/icons";
+import { SubscriptionBadge, type SubscriptionInfo } from "@/components/badges";
+import { dateOnly, tpl } from "@/lib/format";
 
 interface StoreRow {
   id: string;
@@ -17,6 +19,7 @@ interface StoreRow {
   createdAt: string;
   owner: { id: string; name: string; email: string };
   _count: { products: number; orders: number };
+  subscription: SubscriptionInfo;
 }
 
 const PLANS = ["FREE", "BASIC", "PRO"] as const;
@@ -41,7 +44,7 @@ export default function PlatformStoresPage() {
   async function patch(id: string, body: { isActive?: boolean; plan?: string }) {
     setError("");
     try {
-      const updated = await api<{ id: string; plan: string; isActive: boolean }>(
+      const updated = await api<{ id: string; plan: string; isActive: boolean; subscription: SubscriptionInfo }>(
         `/admin/stores/${id}`,
         { method: "PATCH", body: JSON.stringify(body) },
       );
@@ -49,7 +52,7 @@ export default function PlatformStoresPage() {
         prev
           ? prev.map((s) =>
               s.id === id
-                ? { ...s, plan: updated.plan as StoreRow["plan"], isActive: updated.isActive }
+                ? { ...s, plan: updated.plan as StoreRow["plan"], isActive: updated.isActive, subscription: updated.subscription }
                 : s,
             )
           : prev,
@@ -89,6 +92,7 @@ export default function PlatformStoresPage() {
               <th className="text-left px-4 py-3 font-medium">{t("name")}</th>
               <th className="text-left px-4 py-3 font-medium">{t("owner")}</th>
               <th className="text-left px-4 py-3 font-medium">{t("plan")}</th>
+              <th className="text-left px-4 py-3 font-medium">{t("subscription")}</th>
               <th className="text-right px-4 py-3 font-medium">
                 {t("products")}
               </th>
@@ -130,6 +134,18 @@ export default function PlatformStoresPage() {
                     ))}
                   </select>
                 </td>
+                <td className="px-4 py-3">
+                  <SubscriptionBadge status={s.subscription.status} />
+                  {s.subscription.status !== "FREE" && (
+                    <div className="text-xs text-gray-400 mt-1 whitespace-nowrap">
+                      {s.subscription.expiresAt == null
+                        ? t("noExpiry")
+                        : s.subscription.status === "EXPIRED"
+                          ? tpl(t("expiredOn"), { d: dateOnly(s.subscription.expiresAt) })
+                          : tpl(t("daysLeft"), { n: s.subscription.daysLeft ?? 0 })}
+                    </div>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-right">{s._count.products}</td>
                 <td className="px-4 py-3 text-right">{s._count.orders}</td>
                 <td className="px-4 py-3 text-center">
@@ -152,7 +168,7 @@ export default function PlatformStoresPage() {
             ))}
             {stores?.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={8} className="px-4 py-10 text-center text-gray-400">
                   {t("empty")}
                 </td>
               </tr>

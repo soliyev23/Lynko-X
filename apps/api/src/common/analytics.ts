@@ -1,6 +1,6 @@
 import { Prisma } from "@lynko-x/db";
 import { PrismaService } from "../prisma/prisma.service";
-import { PLAN_LIMITS } from "./plans";
+import { subscriptionInfo, type SubscriptionSource } from "./plans";
 
 export interface DayPoint {
   day: string; // YYYY-MM-DD
@@ -48,9 +48,14 @@ export function fillCounts(
   return lastDays(n).map((day) => ({ day, count: byDay.get(day) ?? 0 }));
 }
 
-export function planUsage(plan: string, products: number) {
-  const limit = PLAN_LIMITS[plan] ?? PLAN_LIMITS.FREE;
-  return { plan, products, limit: Number.isFinite(limit) ? limit : null };
+export function planUsage(store: SubscriptionSource, products: number) {
+  const subscription = subscriptionInfo(store);
+  return {
+    plan: subscription.effectivePlan,
+    products,
+    limit: subscription.limit,
+    subscription,
+  };
 }
 
 /**

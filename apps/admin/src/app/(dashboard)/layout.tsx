@@ -10,6 +10,7 @@ import {
   BarChartIcon,
   CartIcon,
   ChevronsLeftIcon,
+  CreditCardIcon,
   GlobeIcon,
   HomeIcon,
   LogOutIcon,
@@ -100,6 +101,7 @@ export default function DashboardLayout({
   const platformNav = [
     { href: "/platform", label: t("platformStats"), icon: BarChartIcon },
     { href: "/platform/stores", label: t("stores"), icon: StoreIcon },
+    { href: "/platform/billing", label: t("billing"), icon: CreditCardIcon },
     { href: "/platform/users", label: t("users"), icon: UsersIcon },
   ];
   const nav = role === "ADMIN" ? platformNav : merchantNav;

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { ImageUploader } from "@/components/ImageUploader";
+import { SubscriptionBadge, type SubscriptionInfo } from "@/components/badges";
+import { dateOnly, tpl } from "@/lib/format";
 
 interface StoreSettings {
   name: string;
@@ -16,13 +18,8 @@ interface StoreSettings {
   deliveryFee: string;
   telegramBotToken: string;
   telegramChatId: string;
+  subscription: SubscriptionInfo;
 }
-
-const PLAN_LIMITS: Record<string, number | null> = {
-  FREE: 10,
-  BASIC: 100,
-  PRO: null,
-};
 
 export default function SettingsPage() {
   const { t } = useI18n();
@@ -44,6 +41,7 @@ export default function SettingsPage() {
         deliveryFee: String(s.deliveryFee ?? 0),
         telegramBotToken: s.telegramBotToken ?? "",
         telegramChatId: s.telegramChatId ?? "",
+        subscription: s.subscription,
       }),
     );
   }, []);
@@ -84,7 +82,8 @@ export default function SettingsPage() {
 
   const input =
     "mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white";
-  const limit = PLAN_LIMITS[form.plan];
+  const sub = form.subscription;
+  const limit = sub.limit;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -100,18 +99,29 @@ export default function SettingsPage() {
         </a>
       </p>
 
-      <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 mb-6 flex items-center justify-between gap-4">
-        <div>
-          <div className="text-sm text-indigo-700">{t("currentPlan")}</div>
-          <div className="text-xl font-bold text-indigo-900">
-            {t(`plan_${form.plan}` as TKey)}
+      <div className={`border rounded-2xl p-4 mb-6 ${sub.status === "EXPIRED" ? "bg-red-50 border-red-200" : "bg-indigo-50 border-indigo-200"}`}>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className="text-sm text-indigo-700 flex items-center gap-2">
+              {t("currentPlan")} <SubscriptionBadge status={sub.status} />
+            </div>
+            <div className="text-xl font-bold text-indigo-900">
+              {t(`plan_${sub.plan}` as TKey)}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-indigo-700">{t("productLimit")}</div>
+            <div className="text-xl font-bold text-indigo-900">
+              {limit === null ? t("unlimited") : limit}
+            </div>
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-sm text-indigo-700">{t("productLimit")}</div>
-          <div className="text-xl font-bold text-indigo-900">
-            {limit === null ? t("unlimited") : limit}
-          </div>
+        <div className="text-sm text-indigo-800/80 mt-3">
+          {sub.status === "EXPIRED" && <span className="text-red-700">{tpl(t("subExpired"), { limit: sub.limit ?? 10 })} </span>}
+          {sub.status === "TRIAL" && <span>{tpl(t("trialUntil"), { d: dateOnly(sub.expiresAt) })} · {tpl(t("daysLeft"), { n: sub.daysLeft ?? 0 })}. {t("subTrialInfo")} </span>}
+          {sub.status === "ACTIVE" && sub.expiresAt && <span>{t("expiresAt")}: {dateOnly(sub.expiresAt)} · {tpl(t("daysLeft"), { n: sub.daysLeft ?? 0 })}. </span>}
+          {sub.status !== "FREE" && <span>{t("subContact")}</span>}
+          {sub.status === "FREE" && <span>{t("upgradeHint")}. {t("subContact")}</span>}
         </div>
       </div>
 

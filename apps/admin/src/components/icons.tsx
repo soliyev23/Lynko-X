@@ -185,3 +185,24 @@ export const ChevronsLeftIcon = (p: IconProps) => (
     <polyline points="18 17 13 12 18 7" />
   </Icon>
 );
+
+export const CreditCardIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+    <line x1="1" y1="10" x2="23" y2="10" />
+  </Icon>
+);
+
+export const TrashIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </Icon>
+);
+
+export const ClockIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </Icon>
+);

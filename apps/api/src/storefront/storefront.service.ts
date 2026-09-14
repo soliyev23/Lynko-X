@@ -7,6 +7,11 @@ import { TelegramService } from "../notifications/telegram.service";
 import { PaymentsService } from "../payments/payments.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CheckoutDto } from "./dto";
+import {
+  effectivePlan,
+  planLimit,
+  type SubscriptionSource,
+} from "../common/plans";
 
 const PAGE_SIZE = 24;
 
@@ -23,7 +28,8 @@ export class StorefrontService {
     private readonly telegram: TelegramService,
   ) {}
 
-  async getStore(slug: string) {
+  /** Do'kon (ichki): obuna maydonlari bilan. */
+  private async findStore(slug: string) {
     const store = await this.prisma.store.findUnique({
       where: { slug },
       select: {
@@ -39,6 +45,9 @@ export class StorefrontService {
         currency: true,
         deliveryFee: true,
         isActive: true,
+        plan: true,
+        planExpiresAt: true,
+        isTrial: true,
         categories: { select: { id: true, name: true, slug: true } },
       },
     });
@@ -47,16 +56,40 @@ export class StorefrontService {
     return store;
   }
 
+  /** Do'kon (ommaviy): obuna maydonlari ko'rsatilmaydi. */
+  async getStore(slug: string) {
+    const { plan, planExpiresAt, isTrial, ...pub } = await this.findStore(slug);
+    void plan; void planExpiresAt; void isTrial;
+    return pub;
+  }
+
+  /**
+   * Tarif limiti: FREE'da (yoki muddati o'tgan pullik tarifda) vitrinada faqat
+   * birinchi N ta faol mahsulot ko'rinadi va sotiladi. Cheksiz tarifda filtr yo'q.
+   */
+  private async visibleFilter(store: SubscriptionSource & { id: string }) {
+    const limit = planLimit(effectivePlan(store));
+    if (limit == null) return {};
+    const first = await this.prisma.product.findMany({
+      where: { storeId: store.id, isActive: true },
+      orderBy: { createdAt: "asc" },
+      take: limit,
+      select: { id: true },
+    });
+    return { id: { in: first.map((p) => p.id) } };
+  }
+
   async listProducts(
     slug: string,
     categorySlug?: string,
     search?: string,
     page = 1,
   ) {
-    const store = await this.getStore(slug);
+    const store = await this.findStore(slug);
     const where = {
       storeId: store.id,
       isActive: true,
+      ...(await this.visibleFilter(store)),
       ...(categorySlug ? { category: { slug: categorySlug } } : {}),
       ...(search
         ? { name: { contains: search, mode: "insensitive" as const } }
@@ -96,9 +129,14 @@ export class StorefrontService {
   }
 
   async getProduct(slug: string, productSlug: string) {
-    const store = await this.getStore(slug);
+    const store = await this.findStore(slug);
     const product = await this.prisma.product.findFirst({
-      where: { storeId: store.id, slug: productSlug, isActive: true },
+      where: {
+        storeId: store.id,
+        slug: productSlug,
+        isActive: true,
+        ...(await this.visibleFilter(store)),
+      },
       include: {
         category: { select: { name: true, slug: true } },
         variants: {
@@ -117,12 +155,18 @@ export class StorefrontService {
    * vaqtda oxirgi donani olib qo'yishidan himoya (race condition).
    */
   async checkout(slug: string, dto: CheckoutDto) {
-    const store = await this.getStore(slug);
+    const store = await this.findStore(slug);
+    const visible = await this.visibleFilter(store);
 
     const order = await this.prisma.$transaction(async (tx) => {
       const productIds = dto.items.map((i) => i.productId);
       const products = await tx.product.findMany({
-        where: { id: { in: productIds }, storeId: store.id, isActive: true },
+        where: {
+          id: { in: productIds },
+          storeId: store.id,
+          isActive: true,
+          ...visible,
+        },
         include: { variants: true },
       });
       const byId = new Map(products.map((p) => [p.id, p]));

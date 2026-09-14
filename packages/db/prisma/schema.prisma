@@ -23,6 +23,7 @@ model User {
   role         UserRole @default(MERCHANT)
   createdAt    DateTime @default(now())
   stores       Store[]
+  planPayments PlanPayment[] // admin sifatida yozgan to'lovlari
 }
 
 // ============ Tenant: har bir do'kon ============
@@ -45,6 +46,8 @@ model Store {
   locale           String     @default("uz")
   deliveryFee      Int        @default(0) // so'mda
   plan             StorePlan  @default(FREE)
+  planExpiresAt    DateTime? // pullik tarif yoki sinov muddati; null = muddatsiz
+  isTrial          Boolean    @default(false) // sinov davri (bepul berilgan pullik tarif)
   theme            String     @default("classic") // vitrina shabloni: classic | minimal | bold | elegant | market
   bannerUrl        String? // hero-bo'lim uchun banner rasmi
   telegramBotToken String? // yangi buyurtma bildirishnomalari uchun
@@ -55,8 +58,38 @@ model Store {
   products    Product[]
   categories  Category[]
   orders      Order[]
+  planPayments PlanPayment[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+}
+
+// ============ Obuna to'lovlari (hozircha qo'lda, keyin Payme/Click) ============
+
+enum PlanPaymentMethod {
+  CASH // naqd
+  CARD // karta
+  TRANSFER // bank o'tkazmasi
+  OTHER
+}
+
+model PlanPayment {
+  id          String            @id @default(cuid())
+  storeId     String
+  store       Store             @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  plan        StorePlan
+  amount      Int // so'mda
+  method      PlanPaymentMethod @default(TRANSFER)
+  months      Int               @default(1)
+  paidAt      DateTime          @default(now())
+  periodStart DateTime
+  periodEnd   DateTime
+  note        String?
+  createdById String? // qaysi admin yozgan
+  createdBy   User?             @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime          @default(now())
+
+  @@index([storeId, paidAt])
+  @@index([paidAt])
 }
 
 model Category {
