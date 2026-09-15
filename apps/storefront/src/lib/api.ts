@@ -1,9 +1,15 @@
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
+/**
+ * Server tomonda (SSR) ishlatiladigan manzil. Deploy'da API bilan bir serverda
+ * turgani uchun tashqi domen orqali emas, to'g'ridan-to'g'ri ichki portga ulanadi.
+ */
+const SERVER_API_URL = process.env.API_INTERNAL_URL ?? API_URL;
+
 /** Server komponentlar uchun: xatoda null qaytaradi (notFound uchun). */
 export async function fetchJson<T>(path: string): Promise<T | null> {
-  const res = await fetch(`${API_URL}${path}`, { cache: "no-store" });
+  const res = await fetch(`${SERVER_API_URL}${path}`, { cache: "no-store" });
   if (!res.ok) return null;
   return res.json();
 }
