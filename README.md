@@ -31,6 +31,8 @@ packages/
 
 ```bash
 pnpm install
+cp apps/api/.env.example apps/api/.env       # DATABASE_URL va JWT_SECRET ni to'ldiring
+cp packages/db/.env.example packages/db/.env
 pnpm db:generate     # Prisma klientni yaratish
 pnpm db:migrate      # migratsiyalar
 pnpm db:seed         # demo do'kon, mahsulotlar va platforma admini
