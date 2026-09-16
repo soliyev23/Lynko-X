@@ -73,6 +73,10 @@ Manzillar va hisoblar:
 - **Xavfsizlik**: JWT, rolga asoslangan guard'lar, helmet, rate-limit (120 so'rov/daqiqa),
   narx va ombor faqat serverda hisoblanadi (race-condition himoyasi)
 
+## Deploy
+
+Test server (Oracle Cloud, https://lynkox.uz): tuzilma, yangilash va zaxira — [DEPLOY.md](DEPLOY.md).
+
 ## To'lovlar
 
 `apps/api/src/payments/` — provayder-adapter arxitekturasi:
