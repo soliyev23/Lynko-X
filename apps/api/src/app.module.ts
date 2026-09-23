@@ -12,6 +12,7 @@ import { StorefrontModule } from "./storefront/storefront.module";
 import { UploadsModule } from "./uploads/uploads.module";
 import { AdminModule } from "./admin/admin.module";
 import { NotificationsModule } from "./notifications/notifications.module";
+import { AuditModule } from "./audit/audit.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { NotificationsModule } from "./notifications/notifications.module";
     // Bitta IP'dan daqiqasiga ko'pi bilan 120 so'rov
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     PrismaModule,
+    AuditModule,
     AuthModule,
     StoresModule,
     ProductsModule,

@@ -1,181 +1,24 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { api } from "@/lib/api";
 import { dateTime, money } from "@/lib/format";
 import { useI18n, type TKey } from "@/lib/i18n";
+import { useStoreDetail } from "@/lib/store-context";
 import { EmptyRow } from "@/components/EmptyState";
 import { PaymentBadge, StatusBadge } from "@/components/badges";
-import {
-  BarChart,
-  HBars,
-  Panel,
-  StatTile,
-  longDay,
-  pctChange,
-  shortDay,
-} from "@/components/charts";
-import { ArrowLeftIcon, CheckIcon, ExternalLinkIcon, XIcon } from "@/components/icons";
-import { SubscriptionBadge, type SubscriptionInfo } from "@/components/badges";
-import { SubscriptionCard, type PlanPayment } from "@/components/SubscriptionCard";
-
-interface StoreDetail {
-  store: {
-    id: string;
-    slug: string;
-    name: string;
-    description: string | null;
-    phone: string | null;
-    telegram: string | null;
-    logoUrl: string | null;
-    theme: string;
-    plan: "FREE" | "BASIC" | "PRO";
-    isActive: boolean;
-    deliveryFee: number;
-    createdAt: string;
-    telegramConfigured: boolean;
-    owner: { id: string; name: string; email: string; createdAt: string };
-    _count: { products: number; orders: number; categories: number };
-  };
-  usage: { plan: string; products: number; limit: number | null };
-  subscription: SubscriptionInfo;
-  payments: PlanPayment[];
-  analytics: {
-    totals: { products: number; orders: number; newOrders: number; revenue: number };
-    period: { orders30: number; revenue30: number; ordersPrev30: number; revenuePrev30: number };
-    daily: { day: string; orders: number; revenue: number }[];
-    statusBreakdown: { status: string; count: number }[];
-    topProducts: { productId: string | null; name: string; quantity: number; revenue: number }[];
-    lowStock: { productId: string; name: string; stock: number }[];
-    recentOrders: {
-      id: string; number: number; customerName: string; total: number;
-      status: string; paymentStatus: string; createdAt: string;
-    }[];
-  };
-  products: {
-    id: string; name: string; slug: string; price: number; stock: number; isActive: boolean;
-    images: string[]; createdAt: string; category: { name: string } | null;
-    variants: { name: string; stock: number; price: number | null }[];
-  }[];
-}
+import { BarChart, HBars, Panel, StatTile, longDay, pctChange, shortDay } from "@/components/charts";
 
 const STATUS_ORDER = ["NEW", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"];
 
-export default function PlatformStoreDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+/** Do'kon: tahlil bo'limi */
+export default function PlatformStoreAnalyticsPage() {
   const { t } = useI18n();
-  const [data, setData] = useState<StoreDetail | null>(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    api<StoreDetail>(`/admin/stores/${id}`).then(setData).catch((e) => setError(e.message));
-  }, [id]);
-
-  async function patch(body: { isActive?: boolean }) {
-    setError("");
-    try {
-      const u = await api<{ plan: StoreDetail["store"]["plan"]; isActive: boolean; subscription: SubscriptionInfo }>(
-        `/admin/stores/${id}`,
-        { method: "PATCH", body: JSON.stringify(body) },
-      );
-      setData((d) => d ? { ...d, store: { ...d.store, plan: u.plan, isActive: u.isActive }, subscription: u.subscription } : d);
-    } catch (e: any) {
-      setError(e.message);
-    }
-  }
-
-  // Obuna kartasi o'zgarganda: tarif, holat, limit va to'lovlar ro'yxati yangilanadi
-  function applySub(next: { plan: StoreDetail["store"]["plan"]; isActive: boolean; subscription: SubscriptionInfo; payments: PlanPayment[] }) {
-    setData((d) =>
-      d
-        ? {
-            ...d,
-            store: { ...d.store, plan: next.plan, isActive: next.isActive },
-            subscription: next.subscription,
-            usage: { ...d.usage, plan: next.subscription.effectivePlan, limit: next.subscription.limit },
-            payments: next.payments,
-          }
-        : d,
-    );
-  }
-
-  if (error && !data) return <div className="text-error-600">{error}</div>;
-  if (!data) return <div className="text-gray-400">{t("loading")}</div>;
-
-  const { store, usage, analytics: an, products, subscription, payments } = data;
-  const stockOf = (p: StoreDetail["products"][number]) =>
-    p.variants.length ? p.variants.reduce((s, v) => s + v.stock, 0) : p.stock;
+  const { data } = useStoreDetail();
+  const { store, analytics: an } = data;
+  const base = `/platform/stores/${store.id}`;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <Link href="/platform/stores" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900">
-        <ArrowLeftIcon size={15} />
-        {t("backToStores")}
-      </Link>
-
-      {error && <div className="bg-error-50 text-error-700 text-sm rounded-lg p-3">{error}</div>}
-
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col lg:flex-row lg:items-start justify-between gap-6">
-        <div className="flex items-start gap-4">
-          {store.logoUrl ? (
-            <img src={store.logoUrl} alt="" className="w-16 h-16 rounded-xl object-cover bg-gray-100" />
-          ) : (
-            <div className="w-16 h-16 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center text-2xl font-bold">{store.name[0]}</div>
-          )}
-          <div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold">{store.name}</h1>
-              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${store.isActive ? "bg-success-100 text-success-700" : "bg-error-100 text-error-700"}`}>
-                {store.isActive ? t("activeLabel") : t("blocked")}
-              </span>
-              <span className="text-xs text-gray-500">{t(`plan_${store.plan}` as TKey)}</span>
-              <SubscriptionBadge status={subscription.status} />
-            </div>
-            <a href={`http://localhost:3001/${store.slug}`} target="_blank" className="inline-flex items-center gap-1 text-sm text-primary-600 hover:underline mt-1">
-              /{store.slug} <ExternalLinkIcon size={12} />
-            </a>
-            {store.description && <p className="text-sm text-gray-500 mt-2 max-w-xl">{store.description}</p>}
-            <dl className="grid sm:grid-cols-2 gap-x-8 gap-y-1 text-sm mt-4">
-              <div><dt className="inline text-gray-500">{t("owner")}: </dt><dd className="inline font-medium">{store.owner.name}</dd> <span className="text-gray-400">({store.owner.email})</span></div>
-              <div><dt className="inline text-gray-500">{t("registered")}: </dt><dd className="inline">{dateTime(store.createdAt)}</dd></div>
-              <div><dt className="inline text-gray-500">{t("phone")}: </dt><dd className="inline">{store.phone ?? "—"}</dd></div>
-              <div><dt className="inline text-gray-500">{t("theme")}: </dt><dd className="inline capitalize">{store.theme}</dd></div>
-              <div><dt className="inline text-gray-500">{t("deliveryFee")}: </dt><dd className="inline">{money(store.deliveryFee)}</dd></div>
-              <div className="inline-flex items-center gap-1.5">
-                {store.telegramConfigured ? <CheckIcon size={14} className="text-success-600" /> : <XIcon size={14} className="text-gray-400" />}
-                <span className={store.telegramConfigured ? "text-success-700" : "text-gray-500"}>
-                  {store.telegramConfigured ? t("telegramLinked") : t("telegramNotLinked")}
-                </span>
-              </div>
-            </dl>
-          </div>
-        </div>
-        <div className="flex flex-col gap-3 shrink-0 lg:w-56">
-          <button
-            onClick={() => patch({ isActive: !store.isActive })}
-            className={`rounded-lg px-4 py-2 text-sm font-medium border transition ${
-              store.isActive
-                ? "border-error-200 text-error-700 hover:bg-error-50"
-                : "border-success-200 text-success-700 hover:bg-success-50"
-            }`}
-          >
-            {store.isActive ? t("block") : t("activate")}
-          </button>
-        </div>
-      </div>
-
-      <SubscriptionCard
-        storeId={id}
-        plan={store.plan}
-        isActive={store.isActive}
-        subscription={subscription}
-        usage={usage}
-        payments={payments}
-        onChange={applySub}
-        onError={setError}
-      />
-
+    <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <StatTile label={t("totalRevenue")} value={money(an.totals.revenue)} highlight />
         <StatTile label={t("revenue30")} value={money(an.period.revenue30)} delta={pctChange(an.period.revenue30, an.period.revenuePrev30)} deltaLabel={t("vsPrev30")} />
@@ -219,47 +62,7 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
         </Panel>
       </div>
 
-      <Panel title={`${t("products")} (${products.length})`} flush>
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500">
-            <tr>
-              <th className="text-left px-5 py-3 font-medium">{t("name")}</th>
-              <th className="text-left px-4 py-3 font-medium">{t("category")}</th>
-              <th className="text-right px-4 py-3 font-medium">{t("price")}</th>
-              <th className="text-right px-4 py-3 font-medium">{t("stock")}</th>
-              <th className="text-center px-4 py-3 font-medium">{t("status")}</th>
-              <th className="text-left px-4 py-3 font-medium">{t("date")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {products.map((p) => (
-              <tr key={p.id} className="hover:bg-gray-50">
-                <td className="px-5 py-3">
-                  <div className="flex items-center gap-3">
-                    {p.images[0] ? <img src={p.images[0]} alt="" className="w-9 h-9 rounded-lg object-cover bg-gray-100" /> : <div className="w-9 h-9 rounded-lg bg-gray-100" />}
-                    <div>
-                      <a href={`http://localhost:3001/${store.slug}/p/${p.slug}`} target="_blank" className="font-medium hover:underline">{p.name}</a>
-                      {p.variants.length > 0 && <div className="text-xs text-gray-400">{p.variants.length} {t("variantsLabel")}</div>}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-gray-500">{p.category?.name ?? "—"}</td>
-                <td className="px-4 py-3 text-right">{money(p.price)}</td>
-                <td className={`px-4 py-3 text-right ${stockOf(p) === 0 ? "text-error-600 font-semibold" : ""}`}>{stockOf(p)}</td>
-                <td className="px-4 py-3 text-center">
-                  <span className={`inline-flex items-center justify-center rounded-full w-6 h-6 ${p.isActive ? "bg-success-100 text-success-700" : "bg-gray-100 text-gray-400"}`}>
-                    {p.isActive ? <CheckIcon size={13} /> : <XIcon size={13} />}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{dateTime(p.createdAt)}</td>
-              </tr>
-            ))}
-            {products.length === 0 && <EmptyRow colSpan={6} kind="generic" title={t("emptyGenericTitle")} />}
-          </tbody>
-        </table>
-      </Panel>
-
-      <Panel title={t("recentOrders")} flush>
+      <Panel title={t("recentOrders")} action={<Link href={`${base}/orders`} className="text-sm text-primary-600 hover:underline">{t("viewAll")}</Link>} flush>
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500">
             <tr>
@@ -274,7 +77,7 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
           <tbody className="divide-y divide-gray-100">
             {an.recentOrders.map((o) => (
               <tr key={o.id} className="hover:bg-gray-50">
-                <td className="px-5 py-3 font-semibold">#{o.number}</td>
+                <td className="px-5 py-3 font-semibold"><Link href={`${base}/orders/${o.id}`} className="text-primary-600 hover:underline">#{o.number}</Link></td>
                 <td className="px-4 py-3">{o.customerName}</td>
                 <td className="px-4 py-3 text-right font-medium">{money(o.total)}</td>
                 <td className="px-4 py-3 text-center"><StatusBadge status={o.status} /></td>
@@ -282,7 +85,7 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{dateTime(o.createdAt)}</td>
               </tr>
             ))}
-            {an.recentOrders.length === 0 && <EmptyRow colSpan={6} kind="generic" title={t("emptyGenericTitle")} />}
+            {an.recentOrders.length === 0 && <EmptyRow colSpan={6} kind="orders" title={t("emptyOrdersTitle")} />}
           </tbody>
         </table>
       </Panel>

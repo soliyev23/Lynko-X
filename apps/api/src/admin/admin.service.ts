@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import * as bcrypt from "bcryptjs";
 import { Prisma } from "@lynko-x/db";
 import { PrismaService } from "../prisma/prisma.service";
 import {
@@ -16,7 +17,9 @@ import {
   effectivePlan,
   subscriptionInfo,
 } from "../common/plans";
-import { AddPlanPaymentDto, AdminUpdateStoreDto } from "./dto";
+import { AddPlanPaymentDto, AdminUpdateStoreDto, CreateAdminDto, CreateNoteDto, UpdateAdminDto } from "./dto";
+import { AuditService } from "../audit/audit.service";
+import { AuthUser, effectiveAdminRole } from "../auth/jwt-auth.guard";
 
 const SUB_SELECT = {
   id: true,
@@ -24,12 +27,68 @@ const SUB_SELECT = {
   planExpiresAt: true,
   isTrial: true,
   isActive: true,
+  blockReason: true,
+  blockedAt: true,
+} as const;
+
+const PAGE = 30;
+
+/** Ro'yxatlarda do'kon haqida qisqa ma'lumot */
+const STORE_BRIEF = {
+  id: true,
+  name: true,
+  slug: true,
+  logoUrl: true,
+  phone: true,
+  plan: true,
+  planExpiresAt: true,
+  isTrial: true,
+  isActive: true,
+  blockReason: true,
+  blockedAt: true,
+  createdAt: true,
+  owner: { select: { name: true, email: true } },
+  _count: { select: { products: true, orders: true } },
 } as const;
 
 /** LYNKO-X platforma egasi uchun: barcha do'konlar, sotuvchilar va tahlil. */
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
+  ) {}
+
+  private actorOf(user: AuthUser) {
+    return { userId: user.userId, email: user.email, role: user.adminRole ?? user.role };
+  }
+
+  private async ensureStore(id: string) {
+    const store = await this.prisma.store.findUnique({ where: { id } });
+    if (!store) throw new NotFoundException("Do'kon topilmadi");
+    return store;
+  }
+
+  /**
+   * Buyurtma qidiruvi: telefon (raqamlar bo'yicha, formatdan qat'i nazar),
+   * buyurtma raqami (#1001) yoki xaridor nomi. Mos kelgan id'lar qaytadi.
+   */
+  private async searchOrderIds(search: string, storeId?: string): Promise<string[]> {
+    const s = search.trim();
+    const digits = s.replace(/\D/g, "");
+    const num = /^#?(\d{1,9})$/.exec(s);
+    const rows = await this.prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
+      SELECT id FROM "Order"
+      WHERE (${storeId ?? null}::text IS NULL OR "storeId" = ${storeId ?? null})
+        AND (
+          "customerName" ILIKE ${"%" + s + "%"}
+          OR (${digits.length >= 4} AND regexp_replace(phone, '[^0-9]', '', 'g') LIKE ${"%" + digits + "%"})
+          OR (${num != null} AND number = ${num ? Number(num[1]) : -1})
+        )
+      ORDER BY "createdAt" DESC
+      LIMIT 500`);
+    return rows.map((r) => r.id);
+  }
 
   async stats() {
     const [merchants, stores, activeStores, products, orders, revenue, latestStores] =
@@ -187,7 +246,7 @@ export class AdminService {
     });
     if (!store) throw new NotFoundException("Do'kon topilmadi");
 
-    const [analytics, payments, products] = await Promise.all([
+    const [analytics, payments, products, notes] = await Promise.all([
       storeAnalytics(this.prisma, id),
       this.prisma.planPayment.findMany({
         where: { storeId: id },
@@ -212,6 +271,12 @@ export class AdminService {
           variants: { select: { name: true, stock: true, price: true } },
         },
       }),
+      this.prisma.storeNote.findMany({
+        where: { storeId: id },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        include: { author: { select: { id: true, name: true } } },
+      }),
     ]);
 
     // Bot tokeni platforma egasiga ham ko'rsatilmaydi — faqat ulanganligi
@@ -226,14 +291,36 @@ export class AdminService {
       analytics,
       products,
       payments,
+      notes,
     };
   }
 
-  async updateStore(id: string, dto: AdminUpdateStoreDto) {
+  /**
+   * Do'konni o'zgartirish. Tarif va muddat: Bosh admin yoki Moliya;
+   * bloklash: Bosh admin yoki Support. Har bir o'zgarish jurnalga yoziladi.
+   */
+  async updateStore(id: string, dto: AdminUpdateStoreDto, user: AuthUser) {
     const store = await this.prisma.store.findUnique({ where: { id } });
     if (!store) throw new NotFoundException("Do'kon topilmadi");
+    const role = effectiveAdminRole(user);
+    const wantsBilling = dto.plan !== undefined || dto.planExpiresAt !== undefined || dto.isTrial !== undefined;
+    const wantsSupport = dto.isActive !== undefined;
+    if (wantsBilling && !["OWNER", "FINANCE"].includes(role))
+      throw new ForbiddenException("Tarif va muddatni faqat Bosh admin yoki Moliya o'zgartiradi");
+    if (wantsSupport && !["OWNER", "SUPPORT"].includes(role))
+      throw new ForbiddenException("Bloklashni faqat Bosh admin yoki Support qiladi");
+
     const data: Prisma.StoreUpdateInput = {};
-    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+    if (dto.isActive !== undefined) {
+      data.isActive = dto.isActive;
+      if (dto.isActive) {
+        data.blockReason = null;
+        data.blockedAt = null;
+      } else {
+        data.blockReason = dto.blockReason?.trim() || null;
+        data.blockedAt = new Date();
+      }
+    }
     if (dto.plan !== undefined) {
       data.plan = dto.plan;
       if (dto.plan === "FREE") {
@@ -249,6 +336,26 @@ export class AdminService {
       data,
       select: SUB_SELECT,
     });
+
+    const actor = this.actorOf(user);
+    if (dto.isActive !== undefined && dto.isActive !== store.isActive) {
+      await this.audit.log(actor, {
+        action: dto.isActive ? "store.unblocked" : "store.blocked",
+        entity: "store",
+        entityId: id,
+        storeId: id,
+        meta: dto.isActive ? {} : { reason: updated.blockReason },
+      });
+    }
+    if (dto.plan !== undefined && dto.plan !== store.plan) {
+      await this.audit.log(actor, { action: "plan.changed", entity: "store", entityId: id, storeId: id, meta: { from: store.plan, to: dto.plan } });
+    }
+    if (dto.planExpiresAt !== undefined) {
+      await this.audit.log(actor, { action: "expiry.changed", entity: "store", entityId: id, storeId: id, meta: { from: store.planExpiresAt, to: updated.planExpiresAt } });
+    }
+    if (dto.isTrial !== undefined && dto.isTrial !== store.isTrial) {
+      await this.audit.log(actor, { action: "trial.changed", entity: "store", entityId: id, storeId: id, meta: { to: dto.isTrial } });
+    }
     return { ...updated, subscription: subscriptionInfo(updated) };
   }
 
@@ -257,7 +364,7 @@ export class AdminService {
    * Xuddi shu pullik tarif hali tugamagan bo'lsa (sinov emas), yangi davr
    * eski muddat oxiridan boshlanadi; aks holda hozirdan.
    */
-  async addPayment(storeId: string, dto: AddPlanPaymentDto, adminId: string) {
+  async addPayment(storeId: string, dto: AddPlanPaymentDto, user: AuthUser) {
     const store = await this.prisma.store.findUnique({ where: { id: storeId } });
     if (!store) throw new NotFoundException("Do'kon topilmadi");
     const now = new Date();
@@ -281,7 +388,7 @@ export class AdminService {
           periodStart,
           periodEnd,
           note: dto.note?.trim() || null,
-          createdById: adminId,
+          createdById: user.userId,
         },
         include: { createdBy: { select: { name: true } } },
       }),
@@ -291,16 +398,30 @@ export class AdminService {
         select: SUB_SELECT,
       }),
     ]);
+    await this.audit.log(this.actorOf(user), {
+      action: "payment.added",
+      entity: "payment",
+      entityId: payment.id,
+      storeId,
+      meta: { plan: dto.plan, amount: dto.amount, months: dto.months, method: dto.method, periodEnd },
+    });
     return { payment, store: { ...updated, subscription: subscriptionInfo(updated) } };
   }
 
   /** Xato yozilgan to'lovni o'chirish. Muddat avtomatik qayta hisoblanmaydi — admin qo'lda to'g'rilaydi. */
-  async deletePayment(storeId: string, paymentId: string) {
+  async deletePayment(storeId: string, paymentId: string, user: AuthUser) {
     const payment = await this.prisma.planPayment.findFirst({
       where: { id: paymentId, storeId },
     });
     if (!payment) throw new NotFoundException("To'lov topilmadi");
     await this.prisma.planPayment.delete({ where: { id: paymentId } });
+    await this.audit.log(this.actorOf(user), {
+      action: "payment.deleted",
+      entity: "payment",
+      entityId: paymentId,
+      storeId,
+      meta: { plan: payment.plan, amount: payment.amount, paidAt: payment.paidAt },
+    });
     return { ok: true };
   }
 
@@ -421,5 +542,251 @@ export class AdminService {
       },
       orderBy: { createdAt: "desc" },
     });
+  }
+
+  // ================= Do'kon ichki sahifalari =================
+
+  async listStoreOrders(storeId: string, q: { status?: string; search?: string; page?: number }) {
+    await this.ensureStore(storeId);
+    const page = Math.max(1, Number(q.page) || 1);
+    const where: Prisma.OrderWhereInput = { storeId };
+    if (q.status) where.status = q.status as Prisma.EnumOrderStatusFilter["equals"];
+    if (q.search?.trim()) where.id = { in: await this.searchOrderIds(q.search, storeId) };
+    const [items, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * PAGE,
+        take: PAGE,
+        select: {
+          id: true, number: true, customerName: true, phone: true, total: true,
+          status: true, paymentStatus: true, paymentMethod: true, createdAt: true,
+          _count: { select: { items: true } },
+        },
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+    return { items, total, page, pages: Math.max(1, Math.ceil(total / PAGE)) };
+  }
+
+  async getStoreOrder(storeId: string, orderId: string) {
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, storeId },
+      include: {
+        items: { include: { product: { select: { slug: true } } } },
+        payments: { orderBy: { createdAt: "desc" } },
+        store: { select: { id: true, name: true, slug: true } },
+      },
+    });
+    if (!order) throw new NotFoundException("Buyurtma topilmadi");
+    return order;
+  }
+
+  async listStoreProducts(storeId: string, q: { search?: string; page?: number }) {
+    await this.ensureStore(storeId);
+    const page = Math.max(1, Number(q.page) || 1);
+    const where: Prisma.ProductWhereInput = { storeId };
+    if (q.search?.trim()) where.name = { contains: q.search.trim(), mode: "insensitive" };
+    const [items, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * PAGE,
+        take: PAGE,
+        select: {
+          id: true, name: true, slug: true, price: true, stock: true, isActive: true,
+          images: true, createdAt: true,
+          category: { select: { name: true } },
+          variants: { select: { name: true, stock: true, price: true } },
+        },
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+    return { items, total, page, pages: Math.max(1, Math.ceil(total / PAGE)) };
+  }
+
+  // ---------- Ichki izohlar ----------
+
+  async listNotes(storeId: string) {
+    await this.ensureStore(storeId);
+    return this.prisma.storeNote.findMany({
+      where: { storeId },
+      orderBy: { createdAt: "desc" },
+      include: { author: { select: { id: true, name: true } } },
+    });
+  }
+
+  async addNote(storeId: string, dto: CreateNoteDto, user: AuthUser) {
+    await this.ensureStore(storeId);
+    const note = await this.prisma.storeNote.create({
+      data: { storeId, authorId: user.userId, text: dto.text.trim() },
+      include: { author: { select: { id: true, name: true } } },
+    });
+    await this.audit.log(this.actorOf(user), {
+      action: "note.added", entity: "note", entityId: note.id, storeId,
+      meta: { preview: note.text.slice(0, 80) },
+    });
+    return note;
+  }
+
+  async deleteNote(storeId: string, noteId: string, user: AuthUser) {
+    const note = await this.prisma.storeNote.findFirst({ where: { id: noteId, storeId } });
+    if (!note) throw new NotFoundException("Izoh topilmadi");
+    await this.prisma.storeNote.delete({ where: { id: noteId } });
+    await this.audit.log(this.actorOf(user), { action: "note.deleted", entity: "note", entityId: noteId, storeId });
+    return { ok: true };
+  }
+
+  /** Voqealar tarixi: jurnal yozuvlari; ro'yxatdan o'tish yozuvi bo'lmasa sanadan yasaladi */
+  async storeEvents(storeId: string) {
+    const store = await this.prisma.store.findUnique({
+      where: { id: storeId },
+      select: { createdAt: true, owner: { select: { email: true } } },
+    });
+    if (!store) throw new NotFoundException("Do'kon topilmadi");
+    const events: Array<{
+      id: string; action: string; actorEmail: string; actorRole: string;
+      actor: { id: string; name: string } | null; meta: unknown; createdAt: Date;
+    }> = await this.audit.forStore(storeId);
+    if (!events.some((e) => e.action === "store.registered")) {
+      events.push({
+        id: "registered",
+        action: "store.registered",
+        actorEmail: store.owner.email,
+        actorRole: "MERCHANT",
+        actor: null,
+        meta: null,
+        createdAt: store.createdAt,
+      });
+    }
+    return events.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  // ================= E'tibor talab qiladi =================
+
+  async attention() {
+    const now = new Date();
+    const in3 = addDays(now, 3);
+    const weekAgo = addDays(now, -7);
+    const [trialEnding, expired, noOwnProducts, blocked] = await Promise.all([
+      this.prisma.store.findMany({
+        where: { isTrial: true, planExpiresAt: { gt: now, lte: in3 } },
+        select: STORE_BRIEF,
+        orderBy: { planExpiresAt: "asc" },
+        take: 50,
+      }),
+      this.prisma.store.findMany({
+        where: { plan: { not: "FREE" }, planExpiresAt: { lt: now } },
+        select: STORE_BRIEF,
+        orderBy: { planExpiresAt: "desc" },
+        take: 50,
+      }),
+      // 7 kundan katta, faol, lekin namunalardan boshqa mahsuloti yo'q
+      this.prisma.store.findMany({
+        where: {
+          isActive: true,
+          createdAt: { lt: weekAgo },
+          products: { none: { OR: [{ categoryId: null }, { category: { slug: { not: "namunalar" } } }] } },
+        },
+        select: STORE_BRIEF,
+        orderBy: { createdAt: "asc" },
+        take: 50,
+      }),
+      this.prisma.store.findMany({
+        where: { isActive: false },
+        select: STORE_BRIEF,
+        orderBy: { blockedAt: "desc" },
+        take: 50,
+      }),
+    ]);
+    const withSub = (rows: typeof trialEnding) => rows.map((s) => ({ ...s, subscription: subscriptionInfo(s, now) }));
+    return {
+      trialEnding: withSub(trialEnding),
+      expired: withSub(expired),
+      noOwnProducts: withSub(noOwnProducts),
+      blocked: withSub(blocked),
+    };
+  }
+
+  // ================= Global buyurtma qidiruvi =================
+
+  async searchOrders(q: { search?: string; status?: string; page?: number }) {
+    const page = Math.max(1, Number(q.page) || 1);
+    const where: Prisma.OrderWhereInput = {};
+    if (q.status) where.status = q.status as Prisma.EnumOrderStatusFilter["equals"];
+    if (q.search?.trim()) where.id = { in: await this.searchOrderIds(q.search) };
+    const [items, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * PAGE,
+        take: PAGE,
+        select: {
+          id: true, number: true, customerName: true, phone: true, total: true,
+          status: true, paymentStatus: true, createdAt: true,
+          store: { select: { id: true, name: true, slug: true } },
+        },
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+    return { items, total, page, pages: Math.max(1, Math.ceil(total / PAGE)) };
+  }
+
+  // ================= Jamoa (adminlar) =================
+
+  listAdmins() {
+    return this.prisma.user.findMany({
+      where: { role: "ADMIN" },
+      select: { id: true, name: true, email: true, adminRole: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+    });
+  }
+
+  async createAdmin(dto: CreateAdminDto, user: AuthUser) {
+    const taken = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (taken) throw new BadRequestException("Bu email allaqachon ro'yxatdan o'tgan");
+    const created = await this.prisma.user.create({
+      data: {
+        name: dto.name.trim(),
+        email: dto.email.toLowerCase(),
+        passwordHash: await bcrypt.hash(dto.password, 10),
+        role: "ADMIN",
+        adminRole: dto.adminRole,
+      },
+      select: { id: true, name: true, email: true, adminRole: true, createdAt: true },
+    });
+    await this.audit.log(this.actorOf(user), {
+      action: "admin.created", entity: "admin", entityId: created.id,
+      meta: { email: created.email, adminRole: created.adminRole },
+    });
+    return created;
+  }
+
+  async updateAdmin(id: string, dto: UpdateAdminDto, user: AuthUser) {
+    const target = await this.prisma.user.findFirst({ where: { id, role: "ADMIN" } });
+    if (!target) throw new NotFoundException("Admin topilmadi");
+    if (id === user.userId && dto.adminRole !== "OWNER")
+      throw new BadRequestException("O'z huquqingizni pasaytira olmaysiz");
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: { adminRole: dto.adminRole },
+      select: { id: true, name: true, email: true, adminRole: true, createdAt: true },
+    });
+    await this.audit.log(this.actorOf(user), {
+      action: "admin.role_changed", entity: "admin", entityId: id,
+      meta: { email: updated.email, from: target.adminRole, to: dto.adminRole },
+    });
+    return updated;
+  }
+
+  async removeAdmin(id: string, user: AuthUser) {
+    if (id === user.userId) throw new BadRequestException("O'zingizni olib tashlay olmaysiz");
+    const target = await this.prisma.user.findFirst({ where: { id, role: "ADMIN" } });
+    if (!target) throw new NotFoundException("Admin topilmadi");
+    await this.prisma.user.delete({ where: { id } });
+    await this.audit.log(this.actorOf(user), {
+      action: "admin.removed", entity: "admin", entityId: id, meta: { email: target.email },
+    });
+    return { ok: true };
   }
 }

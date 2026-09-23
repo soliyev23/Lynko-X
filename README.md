@@ -62,8 +62,13 @@ Manzillar va hisoblar:
   Shablon registri: `apps/storefront/src/lib/themes.ts` (yangi shablon = bitta obyekt)
 - **Xaridor**: katalog, qidiruv, sahifalash, variant tanlash, savat, checkout (naqd yoki
   test-onlayn), buyurtmani raqam + telefon orqali kuzatish; SEO meta-teglar
-- **Platforma admini**: umumiy statistika, barcha do'konlar (tarifni o'zgartirish,
-  bloklash/faollashtirish, qidiruv), foydalanuvchilar ro'yxati
+- **Platforma admini (owner-panel)**: statistika va «E'tibor talab qiladi» bloki (sinovi
+  tugayotgan, o'z mahsulotini qo'shmagan, bloklangan do'konlar); do'kon tanlagich va har do'kon
+  uchun ichki sahifalar (tahlil, buyurtmalar, mahsulotlar, obuna, ma'lumotlar: kontaktlar, ichki
+  izohlar, bloklash sababi, voqealar tarixi); barcha do'konlar ichidan buyurtma qidiruvi (telefon,
+  raqam, ism); audit-jurnal (kim, qachon, nima qildi); jamoa huquqlari — Bosh admin (hamma narsa),
+  Support (bloklash, izohlar), Moliya (tariflar, to'lovlar). API tomonda `@AdminRoles(...)` va
+  `AuditService`.
 - **Tariflar va obuna**: FREE (10 mahsulot, muddatsiz) · BASIC (100, 99 000 so'm/oy) · PRO (cheksiz,
   249 000 so'm/oy). Yangi do'kon 14 kun PRO sinov oladi. Pullik tarif muddatli: muddat o'tsa do'kon
   amalda FREE bo'ladi (vitrinada faqat birinchi 10 ta mahsulot ko'rinadi, yangisini qo'shib bo'lmaydi).

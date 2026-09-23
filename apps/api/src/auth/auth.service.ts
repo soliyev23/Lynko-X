@@ -9,12 +9,14 @@ import { PrismaService } from "../prisma/prisma.service";
 import { LoginDto, RegisterDto } from "./dto";
 import { createSampleProducts } from "../common/sample-products";
 import { trialSubscription } from "../common/plans";
+import { AuditService } from "../audit/audit.service";
 
 type SessionUser = {
   id: string;
   email: string;
   name: string;
   role: "MERCHANT" | "ADMIN";
+  adminRole?: "OWNER" | "SUPPORT" | "FINANCE" | null;
 };
 
 @Injectable()
@@ -22,6 +24,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly audit: AuditService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -54,6 +57,10 @@ export class AuthService {
       await createSampleProducts(tx, created.stores[0].id);
       return created;
     });
+    await this.audit.log(
+      { userId: user.id, email: user.email, role: "MERCHANT" },
+      { action: "store.registered", entity: "store", entityId: user.stores[0].id, storeId: user.stores[0].id, meta: { name: dto.storeName, slug: dto.storeSlug } },
+    );
 
     return this.buildSession(user, user.stores[0]);
   }
@@ -72,10 +79,10 @@ export class AuthService {
   async me(userId: string) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
-      select: { id: true, email: true, name: true, role: true, stores: true },
+      select: { id: true, email: true, name: true, role: true, adminRole: true, stores: true },
     });
     return {
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, adminRole: user.adminRole },
       store: user.stores[0] ?? null,
     };
   }
@@ -91,7 +98,7 @@ export class AuthService {
     });
     return {
       token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, adminRole: user.adminRole ?? null },
       store: store ?? null,
     };
   }

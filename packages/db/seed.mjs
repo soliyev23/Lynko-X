@@ -24,6 +24,7 @@ if (!(await prisma.user.findUnique({ where: { email: ADMIN_EMAIL } }))) {
       email: ADMIN_EMAIL,
       name: "LYNKO-X Admin",
       role: "ADMIN",
+      adminRole: "OWNER",
       passwordHash: await bcrypt.hash("admin1234", 10),
     },
   });

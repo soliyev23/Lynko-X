@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { dateTime, money } from "@/lib/format";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { EmptyRow } from "@/components/EmptyState";
+import { AttentionPanel } from "@/components/AttentionPanel";
 import {
   BarChart,
   HBars,
@@ -79,6 +80,8 @@ export default function PlatformStatsPage() {
         </h1>
         <p className="text-sm text-gray-500 mt-1">{t("last30")}</p>
       </div>
+
+      <AttentionPanel />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4">
         <StatTile

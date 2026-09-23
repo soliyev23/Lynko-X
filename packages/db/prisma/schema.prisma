@@ -21,9 +21,19 @@ model User {
   passwordHash String
   name         String
   role         UserRole @default(MERCHANT)
+  adminRole    AdminRole? // faqat role = ADMIN uchun: huquqlar darajasi
   createdAt    DateTime @default(now())
   stores       Store[]
   planPayments PlanPayment[] // admin sifatida yozgan to'lovlari
+  storeNotes   StoreNote[]
+  auditLogs    AuditLog[]    @relation("AuditActor")
+}
+
+// LYNKO-X jamoasi huquqlari
+enum AdminRole {
+  OWNER // hamma narsa, jamoani boshqarish
+  SUPPORT // ko'rish, bloklash, izohlar
+  FINANCE // ko'rish, tariflar va to'lovlar
 }
 
 // ============ Tenant: har bir do'kon ============
@@ -54,14 +64,53 @@ model Store {
   telegramBotToken String? // yangi buyurtma bildirishnomalari uchun
   telegramChatId   String?
   isActive         Boolean    @default(true)
+  blockReason      String? // owner-panel: nima uchun bloklangan
+  blockedAt        DateTime?
   ownerId          String
   owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   products    Product[]
   categories  Category[]
   orders      Order[]
   planPayments PlanPayment[]
+  notes       StoreNote[]
+  auditLogs   AuditLog[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+}
+
+// ============ Owner-panel: ichki izohlar va audit-jurnal ============
+
+model StoreNote {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([storeId, createdAt])
+}
+
+// Kim, qachon, nima qildi. Owner-panel amallari va tizim voqealari.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  actorEmail String
+  actorRole  String // OWNER | SUPPORT | FINANCE | MERCHANT | SYSTEM
+  action     String // masalan: store.blocked, payment.added
+  entity     String // store | payment | note | admin | order
+  entityId   String?
+  storeId    String?
+  store      Store?   @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([storeId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([action])
 }
 
 // ============ Obuna to'lovlari (hozircha qo'lda, keyin Payme/Click) ============

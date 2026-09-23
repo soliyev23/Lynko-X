@@ -6,6 +6,8 @@ import Link from "next/link";
 import { api, getToken, setToken } from "@/lib/api";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { LogoMark } from "@/components/Logo";
+import { StoreSwitcher } from "@/components/StoreSwitcher";
+import { AdminProvider, type AdminMe } from "@/lib/admin-context";
 import {
   BarChartIcon,
   CartIcon,
@@ -19,6 +21,9 @@ import {
   PaletteIcon,
   ShieldIcon,
   SlidersIcon,
+  ClipboardIcon,
+  InfoIcon,
+  ListIcon,
   StoreIcon,
   UsersIcon,
   SunIcon,
@@ -45,6 +50,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [store, setStore] = useState<Store | null>(null);
   const [role, setRole] = useState<Role>("MERCHANT");
+  const [adminMe, setAdminMe] = useState<AdminMe | null>(null);
   const [ready, setReady] = useState(false);
   // Sidebar standart holatda yopiq (faqat ikonkalar); ochilganda kontent ustiga chiqadi
   const [open, setOpen] = useState(false);
@@ -68,10 +74,13 @@ export default function DashboardLayout({
       router.replace("/login");
       return;
     }
-    api<{ user: { role: Role }; store: Store | null }>("/auth/me")
+    api<{ user: { id: string; name: string; email: string; role: Role; adminRole?: "OWNER" | "SUPPORT" | "FINANCE" | null }; store: Store | null }>("/auth/me")
       .then((res) => {
         setStore(res.store);
         setRole(res.user.role);
+        if (res.user.role === "ADMIN") {
+          setAdminMe({ id: res.user.id, name: res.user.name, email: res.user.email, adminRole: res.user.adminRole ?? "SUPPORT" });
+        }
         setReady(true);
       })
       .catch(() => router.replace("/login"));
@@ -116,9 +125,22 @@ export default function DashboardLayout({
   const platformNav = [
     { href: "/platform", label: t("platformStats"), icon: BarChartIcon },
     { href: "/platform/stores", label: t("stores"), icon: StoreIcon },
+    { href: "/platform/orders", label: t("orders"), icon: ListIcon },
     { href: "/platform/billing", label: t("billing"), icon: CreditCardIcon },
     { href: "/platform/users", label: t("users"), icon: UsersIcon },
+    { href: "/platform/audit", label: t("audit"), icon: ClipboardIcon },
   ];
+  // Owner do'kon ichida bo'lsa: do'kon bo'limlari alohida guruh
+  const storeId = role === "ADMIN" ? /^\/platform\/stores\/([^/]+)/.exec(pathname)?.[1] : undefined;
+  const storeNav = storeId
+    ? [
+        { href: `/platform/stores/${storeId}`, label: t("analyticsTab"), icon: BarChartIcon, exact: true },
+        { href: `/platform/stores/${storeId}/orders`, label: t("orders"), icon: CartIcon },
+        { href: `/platform/stores/${storeId}/products`, label: t("products"), icon: PackageIcon },
+        { href: `/platform/stores/${storeId}/billing`, label: t("subscription"), icon: CreditCardIcon },
+        { href: `/platform/stores/${storeId}/info`, label: t("infoTab"), icon: InfoIcon },
+      ]
+    : [];
   const nav = role === "ADMIN" ? platformNav : merchantNav;
   const home = role === "ADMIN" ? "/platform" : "/";
   const isRoot = (href: string) => href === "/" || href === "/platform";
@@ -185,10 +207,14 @@ export default function DashboardLayout({
         {open && (
           <div className="border-b border-slate-800 px-4 py-3">
             {role === "ADMIN" ? (
-              <div className="flex items-center gap-1.5 text-sm text-slate-300">
-                <ShieldIcon size={14} className="text-primary-400" />
-                {t("platformAdmin")}
-              </div>
+              storeId ? (
+                <StoreSwitcher currentId={storeId} />
+              ) : (
+                <div className="flex items-center gap-1.5 text-sm text-slate-300">
+                  <ShieldIcon size={14} className="text-primary-400" />
+                  {adminMe ? `${t("platformAdmin")} · ${t(`adminRole_${adminMe.adminRole}` as any)}` : t("platformAdmin")}
+                </div>
+              )
             ) : (
               store && (
                 <>
@@ -201,7 +227,30 @@ export default function DashboardLayout({
         )}
 
         {/* Bo'limlar */}
-        <nav className="flex-1 space-y-1 p-2">
+        <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
+          {storeNav.length > 0 && (
+            <>
+              {open && <div className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">{t("storeSections")}</div>}
+              {storeNav.map((item) => {
+                const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={close}
+                    aria-current={active ? "page" : undefined}
+                    className={`${itemBase} ${active ? "bg-primary-600 text-white" : itemIdle}`}
+                  >
+                    <item.icon size={18} className="shrink-0" />
+                    {open && <span className="truncate">{item.label}</span>}
+                    {tip(item.label)}
+                  </Link>
+                );
+              })}
+              <div className="my-2 border-t border-slate-800" />
+              {open && <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">{t("platformSections")}</div>}
+            </>
+          )}
           {nav.map((item) => {
             const active = isRoot(item.href)
               ? pathname === item.href
@@ -291,7 +340,7 @@ export default function DashboardLayout({
 
       {/* Kontent doim tor panel kengligida chapdan joy qoldiradi; panel ochilganda siljimaydi */}
       <main className="min-h-screen min-w-0 pl-16">
-        <div className="mx-auto w-full max-w-7xl p-8 overflow-x-auto">{children}</div>
+        <div className="mx-auto w-full max-w-7xl p-8 overflow-x-auto"><AdminProvider value={adminMe}>{children}</AdminProvider></div>
       </main>
     </div>
   );

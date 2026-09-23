@@ -7,6 +7,7 @@ import { dateTime } from "@/lib/format";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { EmptyRow } from "@/components/EmptyState";
 import { SearchIcon } from "@/components/icons";
+import { TeamPanel } from "@/components/TeamPanel";
 
 interface UserRow {
   id: string;
@@ -40,6 +41,8 @@ export default function PlatformUsersPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">{t("users")}</h1>
+      <TeamPanel />
+      <h2 className="font-semibold mb-3">{t("merchantsTab")}</h2>
       <div className="relative mb-4 max-w-sm">
         <SearchIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
