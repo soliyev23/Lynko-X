@@ -244,9 +244,10 @@ export default function DashboardLayout({
             </>
           )}
           {nav.map((item) => {
+            // Do'kon ichida platforma bo'limlari faol bo'lmaydi (do'kon guruhi ko'rsatadi)
             const active = isRoot(item.href)
               ? pathname === item.href
-              : pathname.startsWith(item.href);
+              : !storeId && pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
