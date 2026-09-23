@@ -131,6 +131,12 @@ const uz = {
   welcomeText:
     "Endi unga mos ko'rinishni tanlang, banner yuklang va mahsulot qo'shishni boshlang.",
   banner: "Banner rasmi",
+  brandColor: "Brend rangi",
+  brandColorHint:
+    "Vitrinadagi tugmalar, havolalar va urg'ular shu rangda bo'ladi. Standart holatda shablonning o'z rangi ishlatiladi.",
+  brandDefault: "Standart",
+  customColor: "O'z rangingiz",
+  apply: "Qo'llash",
   bannerHint:
     "Bosh sahifadagi hero-bo'lim uchun keng rasm (tavsiya: 1600×600). Market shablonida ishlatilmaydi.",
   selected: "Tanlangan",
@@ -355,6 +361,12 @@ const ru: Record<keyof typeof uz, string> = {
   welcomeText:
     "Теперь выберите подходящее оформление, загрузите баннер и начните добавлять товары.",
   banner: "Баннер",
+  brandColor: "Цвет бренда",
+  brandColorHint:
+    "Кнопки, ссылки и акценты витрины будут этого цвета. По умолчанию используется цвет шаблона.",
+  brandDefault: "По умолчанию",
+  customColor: "Свой цвет",
+  apply: "Применить",
   bannerHint:
     "Широкое изображение для главной страницы (рекомендуется 1600×600). В шаблоне Market не используется.",
   selected: "Выбран",

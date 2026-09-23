@@ -66,7 +66,7 @@ export default function BillingPage() {
         {rows.map((s) => (
           <li key={s.id} className="flex items-center justify-between gap-3 py-2.5">
             <div className="min-w-0">
-              <Link href={`/platform/stores/${s.id}`} className="font-medium text-indigo-600 hover:underline">
+              <Link href={`/platform/stores/${s.id}`} className="font-medium text-primary-600 hover:underline">
                 {s.name}
               </Link>
               <div className="text-xs text-gray-400 truncate">
@@ -146,7 +146,7 @@ export default function BillingPage() {
               <tr key={p.id} className="hover:bg-gray-50">
                 <td className="px-5 py-3 whitespace-nowrap text-gray-500">{dateTime(p.paidAt)}</td>
                 <td className="px-4 py-3">
-                  <Link href={`/platform/stores/${p.store.id}`} className="font-medium text-indigo-600 hover:underline">{p.store.name}</Link>
+                  <Link href={`/platform/stores/${p.store.id}`} className="font-medium text-primary-600 hover:underline">{p.store.name}</Link>
                   {p.note && <div className="text-xs text-gray-400 truncate max-w-[220px]">{p.note}</div>}
                 </td>
                 <td className="px-4 py-3">{t(`plan_${p.plan}` as TKey)} · {p.months} {t("monthShort")}</td>

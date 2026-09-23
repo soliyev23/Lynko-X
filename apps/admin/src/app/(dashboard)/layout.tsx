@@ -148,7 +148,7 @@ export default function DashboardLayout({
             <LogoMark size={32} className="shrink-0" />
             {open && (
               <span className="text-lg font-extrabold tracking-tight leading-none">
-                LYNKO<span className="text-emerald-400">-X</span>
+                LYNKO<span className="text-primary-400">-X</span>
               </span>
             )}
           </Link>
@@ -171,7 +171,7 @@ export default function DashboardLayout({
           <div className="border-b border-slate-800 px-4 py-3">
             {role === "ADMIN" ? (
               <div className="flex items-center gap-1.5 text-sm text-slate-300">
-                <ShieldIcon size={14} className="text-indigo-400" />
+                <ShieldIcon size={14} className="text-primary-400" />
                 {t("platformAdmin")}
               </div>
             ) : (
@@ -197,7 +197,7 @@ export default function DashboardLayout({
                 href={item.href}
                 onClick={close}
                 aria-current={active ? "page" : undefined}
-                className={`${itemBase} ${active ? "bg-indigo-600 text-white" : itemIdle}`}
+                className={`${itemBase} ${active ? "bg-primary-600 text-white" : itemIdle}`}
               >
                 <item.icon size={18} className="shrink-0" />
                 {open && <span className="truncate">{item.label}</span>}
@@ -230,7 +230,7 @@ export default function DashboardLayout({
                   type="button"
                   onClick={() => setLocale(l)}
                   className={`rounded px-2 py-1 text-xs font-semibold uppercase transition-colors ${
-                    locale === l ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"
+                    locale === l ? "bg-white/15 text-white" : "text-slate-400 hover:text-white"
                   }`}
                 >
                   {l}

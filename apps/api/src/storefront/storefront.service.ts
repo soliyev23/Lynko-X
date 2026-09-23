@@ -42,6 +42,7 @@ export class StorefrontService {
         logoUrl: true,
         bannerUrl: true,
         theme: true,
+        brandColor: true,
         currency: true,
         deliveryFee: true,
         isActive: true,

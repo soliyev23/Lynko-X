@@ -83,7 +83,7 @@ export default function CartPage({
             </div>
             <button
               onClick={() => remove(item.productId, item.variantId)}
-              className="t-muted hover:text-red-500 p-1"
+              className="t-muted hover:text-error-500 p-1"
               aria-label="O'chirish"
             >
               <XIcon size={16} />

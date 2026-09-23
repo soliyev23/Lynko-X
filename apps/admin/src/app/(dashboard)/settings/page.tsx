@@ -81,7 +81,7 @@ export default function SettingsPage() {
   if (!form) return <div className="text-gray-400">{t("loading")}</div>;
 
   const input =
-    "mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white";
+    "mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white";
   const sub = form.subscription;
   const limit = sub.limit;
 
@@ -93,31 +93,31 @@ export default function SettingsPage() {
         <a
           href={`http://localhost:3001/${form.slug}`}
           target="_blank"
-          className="text-indigo-600 font-medium"
+          className="text-primary-600 font-medium"
         >
           localhost:3001/{form.slug}
         </a>
       </p>
 
-      <div className={`border rounded-2xl p-4 mb-6 ${sub.status === "EXPIRED" ? "bg-red-50 border-red-200" : "bg-indigo-50 border-indigo-200"}`}>
+      <div className={`border rounded-2xl p-4 mb-6 ${sub.status === "EXPIRED" ? "bg-error-50 border-error-200" : "bg-primary-50 border-primary-200"}`}>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <div className="text-sm text-indigo-700 flex items-center gap-2">
+            <div className="text-sm text-primary-700 flex items-center gap-2">
               {t("currentPlan")} <SubscriptionBadge status={sub.status} />
             </div>
-            <div className="text-xl font-bold text-indigo-900">
+            <div className="text-xl font-bold text-primary-900">
               {t(`plan_${sub.plan}` as TKey)}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-indigo-700">{t("productLimit")}</div>
-            <div className="text-xl font-bold text-indigo-900">
+            <div className="text-sm text-primary-700">{t("productLimit")}</div>
+            <div className="text-xl font-bold text-primary-900">
               {limit === null ? t("unlimited") : limit}
             </div>
           </div>
         </div>
-        <div className="text-sm text-indigo-800/80 mt-3">
-          {sub.status === "EXPIRED" && <span className="text-red-700">{tpl(t("subExpired"), { limit: sub.limit ?? 10 })} </span>}
+        <div className="text-sm text-primary-800/80 mt-3">
+          {sub.status === "EXPIRED" && <span className="text-error-700">{tpl(t("subExpired"), { limit: sub.limit ?? 10 })} </span>}
           {sub.status === "TRIAL" && <span>{tpl(t("trialUntil"), { d: dateOnly(sub.expiresAt) })} · {tpl(t("daysLeft"), { n: sub.daysLeft ?? 0 })}. {t("subTrialInfo")} </span>}
           {sub.status === "ACTIVE" && sub.expiresAt && <span>{t("expiresAt")}: {dateOnly(sub.expiresAt)} · {tpl(t("daysLeft"), { n: sub.daysLeft ?? 0 })}. </span>}
           {sub.status !== "FREE" && <span>{t("subContact")}</span>}
@@ -127,12 +127,12 @@ export default function SettingsPage() {
 
       <form onSubmit={submit} className="space-y-4">
         {message && (
-          <div className="bg-green-50 text-green-700 text-sm rounded-lg p-3">
+          <div className="bg-success-50 text-success-700 text-sm rounded-lg p-3">
             {message}
           </div>
         )}
         {error && (
-          <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3">
+          <div className="bg-error-50 text-error-700 text-sm rounded-lg p-3">
             {error}
           </div>
         )}
@@ -238,7 +238,7 @@ export default function SettingsPage() {
 
         <button
           disabled={busy}
-          className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg px-5 py-2.5"
+          className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-medium rounded-lg px-5 py-2.5"
         >
           {busy ? t("saving") : t("save")}
         </button>

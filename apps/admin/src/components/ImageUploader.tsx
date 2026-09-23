@@ -54,7 +54,7 @@ export function ImageUploader({
             <button
               type="button"
               onClick={() => onChange(images.filter((u) => u !== url))}
-              className="absolute -top-2 -right-2 bg-white border border-gray-300 text-gray-500 hover:text-red-500 hover:border-red-300 rounded-full w-6 h-6 flex items-center justify-center shadow-sm"
+              className="absolute -top-2 -right-2 bg-white border border-gray-300 text-gray-500 hover:text-error-500 hover:border-error-300 rounded-full w-6 h-6 flex items-center justify-center shadow-sm"
               aria-label={t("delete")}
             >
               <XIcon size={12} />
@@ -65,7 +65,7 @@ export function ImageUploader({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={busy}
-          className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 hover:border-indigo-400 hover:text-indigo-600 text-gray-400 flex flex-col items-center justify-center gap-1.5 text-xs font-medium transition disabled:opacity-50"
+          className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 hover:border-primary-400 hover:text-primary-600 text-gray-400 flex flex-col items-center justify-center gap-1.5 text-xs font-medium transition disabled:opacity-50"
         >
           <UploadIcon size={20} />
           {busy ? t("uploading") : t("upload")}
@@ -79,7 +79,7 @@ export function ImageUploader({
         hidden
         onChange={(e) => handleFiles(e.target.files)}
       />
-      {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+      {error && <p className="text-sm text-error-600 mt-2">{error}</p>}
     </div>
   );
 }

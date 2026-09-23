@@ -3,18 +3,18 @@
 import { useI18n, type TKey } from "@/lib/i18n";
 
 const STATUS_COLORS: Record<string, string> = {
-  NEW: "bg-blue-100 text-blue-700",
-  CONFIRMED: "bg-amber-100 text-amber-700",
-  SHIPPED: "bg-violet-100 text-violet-700",
-  DELIVERED: "bg-green-100 text-green-700",
-  CANCELLED: "bg-red-100 text-red-700",
+  NEW: "bg-info-100 text-info-700",
+  CONFIRMED: "bg-warning-100 text-warning-700",
+  SHIPPED: "bg-primary-100 text-primary-700",
+  DELIVERED: "bg-success-100 text-success-700",
+  CANCELLED: "bg-error-100 text-error-700",
 };
 
 const PAY_COLORS: Record<string, string> = {
   PENDING: "bg-gray-100 text-gray-600",
-  PAID: "bg-green-100 text-green-700",
-  FAILED: "bg-red-100 text-red-700",
-  REFUNDED: "bg-amber-100 text-amber-700",
+  PAID: "bg-success-100 text-success-700",
+  FAILED: "bg-error-100 text-error-700",
+  REFUNDED: "bg-warning-100 text-warning-700",
 };
 
 export function StatusBadge({ status }: { status: string }) {
@@ -41,9 +41,9 @@ export function PaymentBadge({ status }: { status: string }) {
 
 const SUB_COLORS: Record<string, string> = {
   FREE: "bg-gray-100 text-gray-600",
-  TRIAL: "bg-amber-100 text-amber-700",
-  ACTIVE: "bg-green-100 text-green-700",
-  EXPIRED: "bg-red-100 text-red-700",
+  TRIAL: "bg-warning-100 text-warning-700",
+  ACTIVE: "bg-success-100 text-success-700",
+  EXPIRED: "bg-error-100 text-error-700",
 };
 
 export interface SubscriptionInfo {

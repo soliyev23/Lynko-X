@@ -46,7 +46,7 @@ export default function LoginPage() {
           <div className="text-gray-500 mt-1">{t("login")}</div>
         </div>
         {error && (
-          <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3">
+          <div className="bg-error-50 text-error-700 text-sm rounded-lg p-3">
             {error}
           </div>
         )}
@@ -57,7 +57,7 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </label>
         <label className="block">
@@ -69,18 +69,18 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </label>
         <button
           disabled={busy}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg py-2.5 transition"
+          className="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-medium rounded-lg py-2.5 transition"
         >
           {busy ? "..." : t("login")}
         </button>
         <p className="text-sm text-center text-gray-500">
           {t("noAccount")}{" "}
-          <Link href="/register" className="text-indigo-600 font-medium">
+          <Link href="/register" className="text-primary-600 font-medium">
             {t("register")}
           </Link>
         </p>

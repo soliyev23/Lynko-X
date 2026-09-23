@@ -66,7 +66,7 @@ export default function PlatformStoresPage() {
     <div>
       <h1 className="text-2xl font-bold mb-6">{t("stores")}</h1>
       {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3 mb-4">
+        <div className="bg-error-50 text-error-700 text-sm rounded-lg p-3 mb-4">
           {error}
         </div>
       )}
@@ -107,11 +107,11 @@ export default function PlatformStoresPage() {
             {stores?.map((s) => (
               <tr key={s.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3">
-                  <Link href={`/platform/stores/${s.id}`} className="font-medium text-indigo-600 hover:underline">{s.name}</Link>
+                  <Link href={`/platform/stores/${s.id}`} className="font-medium text-primary-600 hover:underline">{s.name}</Link>
                   <a
                     href={`http://localhost:3001/${s.slug}`}
                     target="_blank"
-                    className="mt-0.5 flex w-fit items-center gap-1 text-xs text-gray-400 hover:text-indigo-600"
+                    className="mt-0.5 flex w-fit items-center gap-1 text-xs text-gray-400 hover:text-primary-600"
                   >
                     /{s.slug}
                     <ExternalLinkIcon size={11} />
@@ -153,8 +153,8 @@ export default function PlatformStoresPage() {
                     onClick={() => patch(s.id, { isActive: !s.isActive })}
                     className={`rounded-full px-3 py-1 text-xs font-medium border transition ${
                       s.isActive
-                        ? "bg-green-50 text-green-700 border-green-200 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
-                        : "bg-red-50 text-red-700 border-red-200 hover:bg-green-50 hover:text-green-700 hover:border-green-200"
+                        ? "bg-success-50 text-success-700 border-success-200 hover:bg-error-50 hover:text-error-700 hover:border-error-200"
+                        : "bg-error-50 text-error-700 border-error-200 hover:bg-success-50 hover:text-success-700 hover:border-success-200"
                     }`}
                     title={s.isActive ? t("block") : t("activate")}
                   >

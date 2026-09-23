@@ -54,10 +54,10 @@ export default function LanguageMenu({ locale, title, closeLabel, onSelect }: Pr
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label={title}
-        className={`inline-flex items-center gap-1 h-9 rounded-lg border pl-3 pr-2 text-sm font-semibold uppercase transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+        className={`inline-flex items-center gap-1 h-9 rounded-lg border pl-3 pr-2 text-sm font-semibold uppercase transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
           open
-            ? "border-emerald-500 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40"
-            : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+            ? "border-primary-500 text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/40"
+            : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-primary-500 hover:text-primary-700 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/40"
         }`}
       >
         {locale}
@@ -100,18 +100,18 @@ export default function LanguageMenu({ locale, title, closeLabel, onSelect }: Pr
                     setOpen(false);
                     onSelect(l.code);
                   }}
-                  className={`w-full flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-left text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+                  className={`w-full flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-left text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
                     selected
-                      ? "border-emerald-600 dark:border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/30"
+                      ? "border-primary-600 dark:border-primary-500 bg-primary-50/60 dark:bg-primary-950/30"
                       : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/60"
                   }`}
                 >
                   <span
                     className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 ${
-                      selected ? "border-emerald-600 dark:border-emerald-500" : "border-gray-300 dark:border-gray-600"
+                      selected ? "border-primary-600 dark:border-primary-500" : "border-gray-300 dark:border-gray-600"
                     }`}
                   >
-                    {selected && <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-500" />}
+                    {selected && <span className="w-2 h-2 rounded-full bg-primary-600 dark:bg-primary-500" />}
                   </span>
                   <Flag width={26} />
                   <span>{l.label}</span>

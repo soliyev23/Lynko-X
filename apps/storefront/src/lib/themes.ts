@@ -37,9 +37,9 @@ export const THEMES: Record<ThemeId, Theme> = {
       "--text": "#111827",
       "--muted": "#6b7280",
       "--border": "#e5e7eb",
-      "--primary": "#059669",
+      "--primary": "#1f2937",
       "--primary-text": "#ffffff",
-      "--primary-soft": "#ecfdf5",
+      "--primary-soft": "#f3f4f6",
       "--radius": "12px",
       "--radius-lg": "16px",
       "--font-heading": fonts.inter,
@@ -169,3 +169,23 @@ export const CARD_CLASS: Record<Theme["card"], string> = {
   shadow: "t-card-shadow",
   flat: "t-card-flat",
 };
+
+/**
+ * Sotuvchining brend rangi shablonning --primary o'zgaruvchilarini almashtiradi.
+ * Matn rangi (oq yoki to'q) fonning yorug'ligiga qarab tanlanadi, "soft" ton esa
+ * rangning yuzaga aralashtirilgan och varianti (dark shablonlarda to'qroq).
+ */
+export function brandVars(color: string | null | undefined, theme: Theme): Record<string, string> {
+  if (!color || !/^#[0-9a-fA-F]{6}$/.test(color)) return {};
+  const n = parseInt(color.slice(1), 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return {
+    "--primary": color.toLowerCase(),
+    "--primary-text": luminance > 0.4 ? "#111827" : "#ffffff",
+    "--primary-soft": `color-mix(in srgb, ${color} ${theme.dark ? 22 : 12}%, ${theme.vars["--surface"]})`,
+  };
+}

@@ -138,7 +138,7 @@ export function SubscriptionCard({ storeId, plan, isActive, subscription, usage,
         title={t("subscription")}
         action={<SubscriptionBadge status={sub.status} />}
       >
-        {message && <div className="bg-green-50 text-green-700 text-sm rounded-lg p-2.5 mb-3">{message}</div>}
+        {message && <div className="bg-success-50 text-success-700 text-sm rounded-lg p-2.5 mb-3">{message}</div>}
         <dl className="text-sm space-y-2">
           <div className="flex items-center justify-between gap-3">
             <dt className="text-gray-500">{t("plan")}</dt>
@@ -160,11 +160,11 @@ export function SubscriptionCard({ storeId, plan, isActive, subscription, usage,
             <dd className="font-medium text-right">{expiryText}</dd>
           </div>
           {sub.status === "EXPIRED" && (
-            <div className="text-xs text-red-600">
+            <div className="text-xs text-error-600">
               {tpl(t("effectivePlanHint"), { plan: t("plan_FREE"), limit: sub.limit ?? "∞" })}
             </div>
           )}
-          {sub.status === "TRIAL" && <div className="text-xs text-amber-700">{t("subTrialInfo")}</div>}
+          {sub.status === "TRIAL" && <div className="text-xs text-warning-700">{t("subTrialInfo")}</div>}
           <div>
             <div className="flex justify-between text-xs text-gray-500 mb-1">
               <span>{t("planUsage")}</span>
@@ -178,7 +178,7 @@ export function SubscriptionCard({ storeId, plan, isActive, subscription, usage,
           <button
             type="button"
             onClick={() => { setShowPay((v) => !v); setShowExpiry(false); }}
-            className="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-3 py-2"
+            className="rounded-lg border border-gray-300 bg-white hover:border-gray-400 text-gray-700 text-sm font-medium px-3 py-2"
           >
             {t("addPayment")}
           </button>
@@ -186,7 +186,7 @@ export function SubscriptionCard({ storeId, plan, isActive, subscription, usage,
             <button
               type="button"
               onClick={() => { setShowExpiry((v) => !v); setShowPay(false); }}
-              className="rounded-lg border border-gray-300 hover:border-indigo-400 text-sm font-medium px-3 py-2 bg-white"
+              className="rounded-lg border border-gray-300 hover:border-primary-400 text-sm font-medium px-3 py-2 bg-white"
             >
               {t("setExpiry")}
             </button>
@@ -253,7 +253,7 @@ export function SubscriptionCard({ storeId, plan, isActive, subscription, usage,
               </label>
             </div>
             <div className="flex gap-2">
-              <button type="submit" disabled={busy} className="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-3 py-1.5 disabled:opacity-50">
+              <button type="submit" disabled={busy} className="rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium px-3 py-1.5 disabled:opacity-50">
                 {busy ? t("saving") : t("save")}
               </button>
               <button type="button" onClick={() => setShowPay(false)} className="rounded-lg border border-gray-300 text-sm font-medium px-3 py-1.5 bg-white">
@@ -298,7 +298,7 @@ export function SubscriptionCard({ storeId, plan, isActive, subscription, usage,
                       onClick={() => removePayment(p.id)}
                       aria-label={t("delete")}
                       title={dateTime(p.paidAt)}
-                      className="text-gray-400 hover:text-red-600 p-1"
+                      className="text-gray-400 hover:text-error-600 p-1"
                     >
                       <TrashIcon size={15} />
                     </button>

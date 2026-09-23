@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchJson, type StoreInfo } from "@/lib/api";
 import { CartProvider } from "@/lib/cart";
-import { getTheme } from "@/lib/themes";
+import { brandVars, getTheme } from "@/lib/themes";
 import { Header } from "@/components/Header";
 
 type Props = {
@@ -41,7 +41,7 @@ export default async function StoreLayout({ children, params }: Props) {
     <div
       className="theme-root"
       data-theme={theme.id}
-      style={theme.vars as React.CSSProperties}
+      style={{ ...theme.vars, ...brandVars(store.brandColor, theme) } as React.CSSProperties}
     >
       <CartProvider storeSlug={slug}>
         <Header store={store} theme={theme} />

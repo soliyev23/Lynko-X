@@ -1,6 +1,6 @@
 import { useId } from "react";
 
-// LYNKO-X belgisi (bosh sahifadagi bilan bir xil): yashil gradientli kvadrat ichida "L" va "x"
+// LYNKO-X belgisi (bosh sahifadagi bilan bir xil): firuza gradientli kvadrat ichida "L" va "x"
 // Belgi + yozuv
 export function Logo({
   size = 30,
@@ -14,8 +14,8 @@ export function Logo({
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <LogoMark size={size} className="shrink-0" />
-      <span className={`font-extrabold tracking-tight leading-none text-gray-900 ${textClassName}`}>
-        LYNKO<span className="text-emerald-600">-X</span>
+      <span className={`font-extrabold tracking-tight leading-none text-fg ${textClassName}`}>
+        LYNKO<span className="text-primary-600">-X</span>
       </span>
     </span>
   );
@@ -29,9 +29,9 @@ export function LogoMark({ size = 30, className = "" }: { size?: number; classNa
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className={className}>
       <defs>
         <linearGradient id={grad} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#34d399" />
-          <stop offset="0.55" stopColor="#059669" />
-          <stop offset="1" stopColor="#065f46" />
+          <stop offset="0" stopColor="#3fb2ae" />
+          <stop offset="0.55" stopColor="#0e7c7b" />
+          <stop offset="1" stopColor="#0f4242" />
         </linearGradient>
         <radialGradient id={shine} cx="0.25" cy="0.15" r="0.9">
           <stop offset="0" stopColor="#ffffff" stopOpacity="0.28" />

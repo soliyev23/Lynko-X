@@ -75,7 +75,7 @@ export default function CheckoutPage({
       <h1 className="t-heading text-2xl font-bold mb-6">Buyurtma berish</h1>
       <form onSubmit={submit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 text-red-700 text-sm rounded-xl p-3">
+          <div className="bg-error-50 text-error-700 text-sm rounded-xl p-3">
             {error}
           </div>
         )}

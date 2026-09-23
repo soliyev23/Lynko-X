@@ -68,7 +68,7 @@ export default function RegisterPage() {
           <div className="text-gray-500 mt-1">{t("createStore")}</div>
         </div>
         {error && (
-          <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3">
+          <div className="bg-error-50 text-error-700 text-sm rounded-lg p-3">
             {error}
           </div>
         )}
@@ -88,7 +88,7 @@ export default function RegisterPage() {
                     : e.target.value,
                 )
               }
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </label>
         ))}
@@ -99,13 +99,13 @@ export default function RegisterPage() {
         )}
         <button
           disabled={busy}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg py-2.5 transition"
+          className="w-full bg-accent-500 hover:bg-accent-400 disabled:opacity-50 text-gray-900 font-medium rounded-lg py-2.5 transition active:bg-accent-600 shadow-md shadow-accent-500/25"
         >
           {busy ? "..." : t("register")}
         </button>
         <p className="text-sm text-center text-gray-500">
           {t("haveAccount")}{" "}
-          <Link href="/login" className="text-indigo-600 font-medium">
+          <Link href="/login" className="text-primary-600 font-medium">
             {t("login")}
           </Link>
         </p>

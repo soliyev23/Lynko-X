@@ -42,8 +42,8 @@ export default function OrdersPage() {
             onClick={() => setFilter(f)}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium border transition ${
               filter === f
-                ? "bg-indigo-600 text-white border-indigo-600"
-                : "bg-white text-gray-600 border-gray-300 hover:border-indigo-400"
+                ? "bg-primary-600 text-white border-primary-600"
+                : "bg-white text-gray-600 border-gray-300 hover:border-primary-400"
             }`}
           >
             {f ? t(`status_${f}` as TKey) : t("all")}
@@ -74,7 +74,7 @@ export default function OrdersPage() {
                 <td className="px-4 py-3">
                   <Link
                     href={`/orders/${o.id}`}
-                    className="text-indigo-600 font-semibold hover:underline"
+                    className="text-primary-600 font-semibold hover:underline"
                   >
                     #{o.number}
                   </Link>

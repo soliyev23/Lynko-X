@@ -52,7 +52,7 @@ export default function ProductsPage() {
         <h1 className="text-2xl font-bold">{t("products")}</h1>
         <Link
           href="/products/new"
-          className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg px-4 py-2"
+          className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg px-4 py-2"
         >
           <PlusIcon size={16} />
           {t("addProduct")}
@@ -114,7 +114,7 @@ export default function ProductsPage() {
                 </td>
                 <td className="px-4 py-3 text-right">{money(p.price)}</td>
                 <td
-                  className={`px-4 py-3 text-right ${totalStock(p) === 0 ? "text-red-600 font-semibold" : ""}`}
+                  className={`px-4 py-3 text-right ${totalStock(p) === 0 ? "text-error-600 font-semibold" : ""}`}
                 >
                   {totalStock(p)}
                 </td>
@@ -122,7 +122,7 @@ export default function ProductsPage() {
                   <span
                     className={`inline-flex items-center justify-center rounded-full w-6 h-6 ${
                       p.isActive
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-success-100 text-success-700"
                         : "bg-gray-100 text-gray-400"
                     }`}
                   >
@@ -136,13 +136,13 @@ export default function ProductsPage() {
                 <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
                   <Link
                     href={`/products/${p.id}`}
-                    className="text-indigo-600 hover:underline"
+                    className="text-primary-600 hover:underline"
                   >
                     {t("edit")}
                   </Link>
                   <button
                     onClick={() => remove(p.id)}
-                    className="text-red-500 hover:underline"
+                    className="text-error-500 hover:underline"
                   >
                     {t("delete")}
                   </button>

@@ -50,6 +50,7 @@ model Store {
   isTrial          Boolean    @default(false) // sinov davri (bepul berilgan pullik tarif)
   theme            String     @default("classic") // vitrina shabloni: classic | minimal | bold | elegant | market
   bannerUrl        String? // hero-bo'lim uchun banner rasmi
+  brandColor       String? // sotuvchining brend rangi (#rrggbb); null = shablonning standart rangi
   telegramBotToken String? // yangi buyurtma bildirishnomalari uchun
   telegramChatId   String?
   isActive         Boolean    @default(true)

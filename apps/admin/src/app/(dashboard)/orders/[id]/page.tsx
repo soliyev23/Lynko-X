@@ -68,7 +68,7 @@ export default function OrderDetailPage({
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3 mb-4">
+        <div className="bg-error-50 text-error-700 text-sm rounded-lg p-3 mb-4">
           {error}
         </div>
       )}
@@ -83,7 +83,7 @@ export default function OrderDetailPage({
             </div>
             <div>
               <span className="text-gray-500">{t("phone")}: </span>
-              <a href={`tel:${order.phone}`} className="text-indigo-600">
+              <a href={`tel:${order.phone}`} className="text-primary-600">
                 {order.phone}
               </a>
             </div>
@@ -115,8 +115,8 @@ export default function OrderDetailPage({
                 disabled={order.status === s}
                 className={`rounded-full px-3.5 py-1.5 text-sm font-medium border transition ${
                   order.status === s
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "bg-white text-gray-600 border-gray-300 hover:border-indigo-400"
+                    ? "bg-primary-600 text-white border-primary-600"
+                    : "bg-white text-gray-600 border-gray-300 hover:border-primary-400"
                 }`}
               >
                 {t(`status_${s}` as TKey)}

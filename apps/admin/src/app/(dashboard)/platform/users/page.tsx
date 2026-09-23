@@ -68,7 +68,7 @@ export default function PlatformUsersPage() {
                 <td className="px-4 py-3 font-medium">{u.name}</td>
                 <td className="px-4 py-3 text-gray-600">{u.email}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${u.role === "ADMIN" ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-600"}`}>
+                  <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${u.role === "ADMIN" ? "bg-primary-100 text-primary-700" : "bg-gray-100 text-gray-600"}`}>
                     {t(`role_${u.role}` as TKey)}
                   </span>
                 </td>
@@ -81,9 +81,9 @@ export default function PlatformUsersPage() {
                         <Link
                           key={s.id}
                           href={`/platform/stores/${s.id}`}
-                          className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs hover:border-indigo-400 ${s.isActive ? "border-gray-200" : "border-red-200 bg-red-50"}`}
+                          className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs hover:border-primary-400 ${s.isActive ? "border-gray-200" : "border-error-200 bg-error-50"}`}
                         >
-                          <span className="font-medium text-indigo-600">{s.name}</span>
+                          <span className="font-medium text-primary-600">{s.name}</span>
                           <span className="text-gray-400">{t(`plan_${s.plan}` as TKey)} · {s._count.orders} {t("ordersCount")}</span>
                         </Link>
                       ))}

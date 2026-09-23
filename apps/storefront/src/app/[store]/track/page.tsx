@@ -106,7 +106,7 @@ export default function TrackOrderPage({
           </label>
         </div>
         {error && (
-          <div className="bg-red-50 text-red-700 text-sm rounded-xl p-3">
+          <div className="bg-error-50 text-error-700 text-sm rounded-xl p-3">
             {error}
           </div>
         )}
@@ -126,7 +126,7 @@ export default function TrackOrderPage({
           </div>
 
           {order.status === "CANCELLED" ? (
-            <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm font-medium mb-5">
+            <div className="flex items-center gap-2 bg-error-50 border border-error-200 text-error-700 rounded-xl p-3 text-sm font-medium mb-5">
               <XIcon size={16} />
               Buyurtma bekor qilingan
             </div>

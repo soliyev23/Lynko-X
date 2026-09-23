@@ -84,7 +84,7 @@ export default function DashboardPage() {
         <a
           href={`http://localhost:3001/${store.slug}`}
           target="_blank"
-          className="inline-flex items-center gap-2 border border-gray-300 hover:border-indigo-400 text-gray-700 rounded-lg px-4 py-2 text-sm font-medium bg-white whitespace-nowrap"
+          className="inline-flex items-center gap-2 border border-gray-300 hover:border-primary-400 text-gray-700 rounded-lg px-4 py-2 text-sm font-medium bg-white whitespace-nowrap"
         >
           <ExternalLinkIcon size={15} />
           {t("viewStore")}
@@ -94,13 +94,13 @@ export default function DashboardPage() {
       {(subWarning || nearLimit || !store.telegramConfigured) && (
         <div className="space-y-2">
           {subWarning && (
-            <div className={`flex items-center justify-between gap-4 rounded-xl px-4 py-3 text-sm border ${sub.status === "EXPIRED" ? "bg-red-50 border-red-200 text-red-800" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
+            <div className={`flex items-center justify-between gap-4 rounded-xl px-4 py-3 text-sm border ${sub.status === "EXPIRED" ? "bg-error-50 border-error-200 text-error-800" : "bg-warning-50 border-warning-200 text-warning-800"}`}>
               <span>{subWarning} {t("subContact")}</span>
               <Link href="/settings" className="font-medium underline whitespace-nowrap">{t("settings")}</Link>
             </div>
           )}
           {nearLimit && (
-            <div className="flex items-center justify-between gap-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm">
+            <div className="flex items-center justify-between gap-4 bg-warning-50 border border-warning-200 text-warning-800 rounded-xl px-4 py-3 text-sm">
               <span>{t("upgradeHint")}</span>
               <Link href="/settings" className="font-medium underline whitespace-nowrap">
                 {t("settings")}
@@ -108,7 +108,7 @@ export default function DashboardPage() {
             </div>
           )}
           {!store.telegramConfigured && (
-            <div className="flex items-center justify-between gap-4 bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-xl px-4 py-3 text-sm">
+            <div className="flex items-center justify-between gap-4 bg-primary-50 border border-primary-200 text-primary-800 rounded-xl px-4 py-3 text-sm">
               <span>{t("telegramNotSet")}</span>
               <Link href="/settings" className="font-medium underline whitespace-nowrap">
                 {t("setUp")}
@@ -212,7 +212,7 @@ export default function DashboardPage() {
                   </Link>
                   <span
                     className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                      p.stock === 0 ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
+                      p.stock === 0 ? "bg-error-100 text-error-700" : "bg-warning-100 text-warning-700"
                     }`}
                   >
                     {p.stock} {t("pcs")}
@@ -236,7 +236,7 @@ export default function DashboardPage() {
       <Panel
         title={t("recentOrders")}
         action={
-          <Link href="/orders" className="text-sm text-indigo-600 hover:underline">
+          <Link href="/orders" className="text-sm text-primary-600 hover:underline">
             {t("viewAll")}
           </Link>
         }
@@ -257,7 +257,7 @@ export default function DashboardPage() {
             {data.recentOrders.map((o) => (
               <tr key={o.id} className="hover:bg-gray-50">
                 <td className="px-5 py-3">
-                  <Link href={`/orders/${o.id}`} className="text-indigo-600 font-semibold hover:underline">
+                  <Link href={`/orders/${o.id}`} className="text-primary-600 font-semibold hover:underline">
                     #{o.number}
                   </Link>
                 </td>

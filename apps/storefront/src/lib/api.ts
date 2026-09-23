@@ -43,6 +43,7 @@ export interface StoreInfo {
   logoUrl: string | null;
   bannerUrl: string | null;
   theme: string;
+  brandColor: string | null;
   deliveryFee: number;
   categories: { id: string; name: string; slug: string }[];
 }

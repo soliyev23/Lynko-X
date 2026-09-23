@@ -99,7 +99,7 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
     );
   }
 
-  if (error && !data) return <div className="text-red-600">{error}</div>;
+  if (error && !data) return <div className="text-error-600">{error}</div>;
   if (!data) return <div className="text-gray-400">{t("loading")}</div>;
 
   const { store, usage, analytics: an, products, subscription, payments } = data;
@@ -113,25 +113,25 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
         {t("backToStores")}
       </Link>
 
-      {error && <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3">{error}</div>}
+      {error && <div className="bg-error-50 text-error-700 text-sm rounded-lg p-3">{error}</div>}
 
       <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col lg:flex-row lg:items-start justify-between gap-6">
         <div className="flex items-start gap-4">
           {store.logoUrl ? (
             <img src={store.logoUrl} alt="" className="w-16 h-16 rounded-xl object-cover bg-gray-100" />
           ) : (
-            <div className="w-16 h-16 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl font-bold">{store.name[0]}</div>
+            <div className="w-16 h-16 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center text-2xl font-bold">{store.name[0]}</div>
           )}
           <div>
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-2xl font-bold">{store.name}</h1>
-              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${store.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${store.isActive ? "bg-success-100 text-success-700" : "bg-error-100 text-error-700"}`}>
                 {store.isActive ? t("activeLabel") : t("blocked")}
               </span>
               <span className="text-xs text-gray-500">{t(`plan_${store.plan}` as TKey)}</span>
               <SubscriptionBadge status={subscription.status} />
             </div>
-            <a href={`http://localhost:3001/${store.slug}`} target="_blank" className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:underline mt-1">
+            <a href={`http://localhost:3001/${store.slug}`} target="_blank" className="inline-flex items-center gap-1 text-sm text-primary-600 hover:underline mt-1">
               /{store.slug} <ExternalLinkIcon size={12} />
             </a>
             {store.description && <p className="text-sm text-gray-500 mt-2 max-w-xl">{store.description}</p>}
@@ -142,8 +142,8 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
               <div><dt className="inline text-gray-500">{t("theme")}: </dt><dd className="inline capitalize">{store.theme}</dd></div>
               <div><dt className="inline text-gray-500">{t("deliveryFee")}: </dt><dd className="inline">{money(store.deliveryFee)}</dd></div>
               <div className="inline-flex items-center gap-1.5">
-                {store.telegramConfigured ? <CheckIcon size={14} className="text-green-600" /> : <XIcon size={14} className="text-gray-400" />}
-                <span className={store.telegramConfigured ? "text-green-700" : "text-gray-500"}>
+                {store.telegramConfigured ? <CheckIcon size={14} className="text-success-600" /> : <XIcon size={14} className="text-gray-400" />}
+                <span className={store.telegramConfigured ? "text-success-700" : "text-gray-500"}>
                   {store.telegramConfigured ? t("telegramLinked") : t("telegramNotLinked")}
                 </span>
               </div>
@@ -155,8 +155,8 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
             onClick={() => patch({ isActive: !store.isActive })}
             className={`rounded-lg px-4 py-2 text-sm font-medium border transition ${
               store.isActive
-                ? "border-red-200 text-red-700 hover:bg-red-50"
-                : "border-green-200 text-green-700 hover:bg-green-50"
+                ? "border-error-200 text-error-700 hover:bg-error-50"
+                : "border-success-200 text-success-700 hover:bg-success-50"
             }`}
           >
             {store.isActive ? t("block") : t("activate")}
@@ -204,7 +204,7 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
               {an.lowStock.map((p, i) => (
                 <li key={i} className="flex items-center justify-between py-2 gap-3">
                   <span className="truncate">{p.name}</span>
-                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${p.stock === 0 ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>{p.stock} {t("pcs")}</span>
+                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${p.stock === 0 ? "bg-error-100 text-error-700" : "bg-warning-100 text-warning-700"}`}>{p.stock} {t("pcs")}</span>
                 </li>
               ))}
             </ul>
@@ -244,9 +244,9 @@ export default function PlatformStoreDetailPage({ params }: { params: Promise<{ 
                 </td>
                 <td className="px-4 py-3 text-gray-500">{p.category?.name ?? "—"}</td>
                 <td className="px-4 py-3 text-right">{money(p.price)}</td>
-                <td className={`px-4 py-3 text-right ${stockOf(p) === 0 ? "text-red-600 font-semibold" : ""}`}>{stockOf(p)}</td>
+                <td className={`px-4 py-3 text-right ${stockOf(p) === 0 ? "text-error-600 font-semibold" : ""}`}>{stockOf(p)}</td>
                 <td className="px-4 py-3 text-center">
-                  <span className={`inline-flex items-center justify-center rounded-full w-6 h-6 ${p.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-400"}`}>
+                  <span className={`inline-flex items-center justify-center rounded-full w-6 h-6 ${p.isActive ? "bg-success-100 text-success-700" : "bg-gray-100 text-gray-400"}`}>
                     {p.isActive ? <CheckIcon size={13} /> : <XIcon size={13} />}
                   </span>
                 </td>

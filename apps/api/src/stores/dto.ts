@@ -4,6 +4,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   Min,
   MinLength,
@@ -20,6 +21,11 @@ export class UpdateStoreDto {
   @IsString()
   @MaxLength(500)
   bannerUrl?: string;
+
+  /** Brend rangi, #rrggbb. Bo'sh satr = shablonning standart rangiga qaytish */
+  @IsOptional()
+  @Matches(/^(#[0-9a-fA-F]{6})?$/, { message: "brandColor #rrggbb ko'rinishida bo'lishi kerak" })
+  brandColor?: string;
 
   @IsOptional()
   @IsString()

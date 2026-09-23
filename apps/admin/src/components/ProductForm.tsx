@@ -126,12 +126,12 @@ export function ProductForm({
   }
 
   const input =
-    "mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white";
+    "mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white";
 
   return (
     <form onSubmit={submit} className="max-w-2xl space-y-4">
       {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3">
+        <div className="bg-error-50 text-error-700 text-sm rounded-lg p-3">
           {error}
         </div>
       )}
@@ -210,7 +210,7 @@ export function ProductForm({
           <button
             type="button"
             onClick={addCategory}
-            className="rounded-lg border border-indigo-300 text-indigo-600 px-3 py-2 text-sm font-medium hover:bg-indigo-50"
+            className="rounded-lg border border-primary-300 text-primary-600 px-3 py-2 text-sm font-medium hover:bg-primary-50"
           >
             {t("add")}
           </button>
@@ -286,7 +286,7 @@ export function ProductForm({
                     form.variants.filter((_, j) => j !== i),
                   )
                 }
-                className="text-gray-400 hover:text-red-500 p-1.5"
+                className="text-gray-400 hover:text-error-500 p-1.5"
                 aria-label={t("delete")}
               >
                 <XIcon size={16} />
@@ -301,7 +301,7 @@ export function ProductForm({
                 { name: "", price: "", stock: "0" },
               ])
             }
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 border border-indigo-300 rounded-lg px-3 py-2 hover:bg-indigo-50"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 border border-primary-300 rounded-lg px-3 py-2 hover:bg-primary-50"
           >
             <PlusIcon size={14} />
             {t("addVariant")}
@@ -322,14 +322,14 @@ export function ProductForm({
           type="checkbox"
           checked={form.isActive}
           onChange={(e) => set("isActive", e.target.checked)}
-          className="w-4 h-4 accent-indigo-600"
+          className="w-4 h-4 accent-primary-600"
         />
         <span className="text-sm text-gray-700">{t("active")}</span>
       </label>
       <div className="flex gap-3 pt-2">
         <button
           disabled={busy}
-          className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg px-5 py-2.5"
+          className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-medium rounded-lg px-5 py-2.5"
         >
           {busy ? t("saving") : t("save")}
         </button>

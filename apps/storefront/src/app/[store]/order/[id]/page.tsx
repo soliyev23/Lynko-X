@@ -87,7 +87,7 @@ export default function OrderConfirmationPage({
       </p>
 
       {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-xl p-3 mb-4">
+        <div className="bg-error-50 text-error-700 text-sm rounded-xl p-3 mb-4">
           {error}
         </div>
       )}

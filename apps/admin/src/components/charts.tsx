@@ -4,10 +4,10 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 // Bitta seriyali grafiklar uchun rang — dataviz validatoridan o'tgan
 // (oq fonda kontrast ≥ 3:1). Matn hech qachon shu rangda bo'lmaydi.
-const BAR = "#4f46e5";
-const BAR_HOVER = "#6366f1";
-const GRID = "#e5e7eb";
-const TICK = "#6b7280";
+const BAR = "var(--color-primary-600)";
+const BAR_HOVER = "var(--color-primary-500)";
+const GRID = "var(--border-default)";
+const TICK = "var(--text-muted)";
 
 /** 1 250 000 -> "1.3 mln", 42 000 -> "42 ming" */
 export function compact(n: number): string {
@@ -194,7 +194,7 @@ export function StatTile({
   return (
     <div
       className={`rounded-2xl border p-5 ${
-        highlight ? "bg-indigo-50 border-indigo-200" : "bg-white border-gray-200"
+        highlight ? "bg-primary-50 border-primary-200" : "bg-white border-gray-200"
       }`}
     >
       <div className="text-sm text-gray-500">{label}</div>
@@ -203,9 +203,9 @@ export function StatTile({
         <div
           className={`text-xs mt-1 font-medium ${
             delta > 0
-              ? "text-green-700"
+              ? "text-success-700"
               : delta < 0
-                ? "text-red-600"
+                ? "text-error-600"
                 : "text-gray-500"
           }`}
         >
@@ -263,7 +263,7 @@ export function HBars({
 /** Limit o'lchagichi: 70% dan sariq, 90% dan qizil. */
 export function Meter({ value, max }: { value: number; max: number }) {
   const pct = Math.min(100, Math.round((value / Math.max(1, max)) * 100));
-  const color = pct >= 90 ? "#dc2626" : pct >= 70 ? "#d97706" : BAR;
+  const color = pct >= 90 ? "var(--color-error-600)" : pct >= 70 ? "var(--color-warning-600)" : BAR;
   return (
     <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
       <div

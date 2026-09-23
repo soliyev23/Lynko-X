@@ -161,7 +161,7 @@ export default function PlatformStatsPage() {
               {an.topStores.map((s) => (
                 <tr key={s.id} className="hover:bg-gray-50">
                   <td className="px-5 py-3">
-                    <Link href={`/platform/stores/${s.id}`} className="font-medium text-indigo-600 hover:underline">{s.name}</Link>
+                    <Link href={`/platform/stores/${s.id}`} className="font-medium text-primary-600 hover:underline">{s.name}</Link>
                     <div className="text-xs text-gray-400">/{s.slug}</div>
                   </td>
                   <td className="px-4 py-3">{t(`plan_${s.plan}` as TKey)}</td>
@@ -178,7 +178,7 @@ export default function PlatformStatsPage() {
 
         <Panel
           title={t("latestStores")}
-          action={<Link href="/platform/stores" className="text-sm text-indigo-600 hover:underline">{t("viewAll")}</Link>}
+          action={<Link href="/platform/stores" className="text-sm text-primary-600 hover:underline">{t("viewAll")}</Link>}
           flush
         >
           <table className="w-full text-sm">
@@ -194,7 +194,7 @@ export default function PlatformStatsPage() {
               {stats.latestStores.map((s) => (
                 <tr key={s.id} className="hover:bg-gray-50">
                   <td className="px-5 py-3">
-                    <Link href={`/platform/stores/${s.id}`} className="font-medium text-indigo-600 hover:underline">{s.name}</Link>
+                    <Link href={`/platform/stores/${s.id}`} className="font-medium text-primary-600 hover:underline">{s.name}</Link>
                     <div className="text-xs text-gray-400">/{s.slug}</div>
                   </td>
                   <td className="px-4 py-3">

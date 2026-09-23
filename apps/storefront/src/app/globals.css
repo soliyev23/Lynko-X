@@ -3,16 +3,137 @@
 /* Dark rejim <html class="dark"> orqali boshqariladi (bosh sahifa tugmasi) */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Standart (Classic) qiymatlar — do'kon shabloni theme-root'da ularni qayta belgilaydi */
+/* ============================================================
+   LYNKO-X dizayn tokenlari. Ranglar faqat shu yerda hex bilan
+   yoziladi, komponentlar Tailwind klasslari (primary-600 ...)
+   yoki CSS o'zgaruvchilari orqali ishlatadi.
+   ============================================================ */
+@theme {
+  /* Brend: chuqur firuza (Samarqand va Buxoro koshinlari) */
+  --color-primary-50: #effaf9;
+  --color-primary-100: #d5f2f0;
+  --color-primary-200: #abe4e1;
+  --color-primary-300: #76cfcb;
+  --color-primary-400: #3fb2ae;
+  --color-primary-500: #1a9693;
+  --color-primary-600: #0e7c7b; /* asosiy: tugma foni, aktiv nav, link */
+  --color-primary-700: #0d6463; /* hover */
+  --color-primary-800: #0f504f; /* active */
+  --color-primary-900: #0f4242;
+  --color-primary-950: #072b2b;
+
+  /* Aksent (amber): faqat ekrandagi eng muhim CTA. Ustidagi matn to'q (#1f2937) */
+  --color-accent-50: #fef7e8;
+  --color-accent-100: #fdecc4;
+  --color-accent-400: #f5bc5e;
+  --color-accent-500: #f2a93b;
+  --color-accent-600: #d98e1f;
+  --color-accent-700: #b4721a;
+
+  /* Semantik holatlar (brenddan alohida). 600 = asosiy qiymat */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-300: #fca5a5;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
+  --color-error-900: #7f1d1d;
+
+  --color-warning-50: #fefce8;
+  --color-warning-100: #fef9c3;
+  --color-warning-200: #fef08a;
+  --color-warning-300: #fde047;
+  --color-warning-400: #facc15;
+  --color-warning-500: #eab308;
+  --color-warning-600: #ca8a04;
+  --color-warning-700: #a16207;
+  --color-warning-800: #854d0e;
+  --color-warning-900: #713f12;
+
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-200: #bfdbfe;
+  --color-info-300: #93c5fd;
+  --color-info-400: #60a5fa;
+  --color-info-500: #3b82f6;
+  --color-info-600: #2563eb;
+  --color-info-700: #1d4ed8;
+  --color-info-800: #1e40af;
+  --color-info-900: #1e3a8a;
+}
+
+/* Yuzalar va matn: light/dark rejimda qiymati almashadigan tokenlar */
+:root {
+  --surface-page: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-muted: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-default: #e2e8f0;
+  --brand: #0e7c7b;
+  --brand-hover: #0d6463;
+  --brand-active: #0f504f;
+  --brand-soft: #effaf9;
+  --brand-contrast: #ffffff;
+  --focus-ring: #1a9693;
+}
+.dark {
+  --surface-page: #0b1215;
+  --surface-card: #111b1f;
+  --surface-muted: #16232a;
+  --text-primary: #e2e8f0;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-default: #243239;
+  --brand: #3fb2ae;
+  --brand-hover: #76cfcb;
+  --brand-active: #abe4e1;
+  --brand-soft: #0f2f2e;
+  --brand-contrast: #0b1215;
+  --focus-ring: #3fb2ae;
+}
+/* Tailwind'da ham ishlatish uchun: bg-surface-page, text-fg, border-line, bg-brand ... */
+@theme inline {
+  --color-surface-page: var(--surface-page);
+  --color-surface-card: var(--surface-card);
+  --color-surface-muted: var(--surface-muted);
+  --color-fg: var(--text-primary);
+  --color-fg-secondary: var(--text-secondary);
+  --color-fg-muted: var(--text-muted);
+  --color-line: var(--border-default);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-active: var(--brand-active);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-contrast: var(--brand-contrast);
+}
+
+/* ---- Vitrina shablonlari: neytral standart qiymatlar. Shablon theme-root'da, sotuvchi
+   brand rangi esa --primary/--primary-soft/--primary-text orqali ularni qayta belgilaydi ---- */
 :root {
   --bg: #fafafa;
   --surface: #ffffff;
   --text: #111827;
   --muted: #6b7280;
   --border: #e5e7eb;
-  --primary: #059669;
+  --primary: #1f2937;
   --primary-text: #ffffff;
-  --primary-soft: #ecfdf5;
+  --primary-soft: #f3f4f6;
   --radius: 12px;
   --radius-lg: 16px;
   --font-heading: var(--font-inter), system-ui, sans-serif;
