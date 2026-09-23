@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { SubscriptionBadge, type SubscriptionInfo } from "@/components/badges";
-import { ChevronDownIcon, SearchIcon, StoreIcon } from "@/components/icons";
+import { ChevronDownIcon, SearchIcon, ShieldIcon, StoreIcon } from "@/components/icons";
 
 interface Row {
   id: string;
@@ -19,8 +19,11 @@ interface Row {
 
 let cache: Row[] | null = null;
 
-/** Owner sidebar'ida: joriy do'kon va barcha do'konlar ro'yxati (qidiruv bilan) */
-export function StoreSwitcher({ currentId }: { currentId: string }) {
+/**
+ * Owner sidebar'ida do'kon tanlagich. Do'kon ichida joriy do'kon nomi, platforma sahifalarida
+ * «Platforma administratori» yozuvi trigger bo'ladi. Ro'yxat sidebar'ning o'ng tomonida ochiladi.
+ */
+export function StoreSwitcher({ currentId }: { currentId?: string }) {
   const { t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
@@ -56,15 +59,16 @@ export function StoreSwitcher({ currentId }: { currentId: string }) {
     };
   }, [open]);
 
-  const current = rows.find((r) => r.id === currentId);
+  const current = currentId ? rows.find((r) => r.id === currentId) : undefined;
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     return s ? rows.filter((r) => r.name.toLowerCase().includes(s) || r.slug.includes(s)) : rows;
   }, [rows, q]);
 
   function go(id: string) {
-    // Joriy bo'lim saqlanadi (buyurtma tafsiloti ro'yxatga qaytadi)
-    const suffix = pathname.replace(/^\/platform\/stores\/[^/]+/, "");
+    // Do'kon ichida joriy bo'lim saqlanadi (buyurtma tafsiloti ro'yxatga qaytadi)
+    const inStore = /^\/platform\/stores\/[^/]+/.test(pathname);
+    const suffix = inStore ? pathname.replace(/^\/platform\/stores\/[^/]+/, "") : "";
     const tab = suffix.startsWith("/orders/") ? "/orders" : suffix;
     setOpen(false);
     router.push(`/platform/stores/${id}${tab}`);
@@ -88,16 +92,25 @@ export function StoreSwitcher({ currentId }: { currentId: string }) {
         aria-expanded={open}
         className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-slate-800"
       >
-        <Avatar r={current} />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-slate-100">{current?.name ?? "…"}</span>
-          <span className="block truncate text-xs text-slate-500">{current ? `/${current.slug}` : t("switchStore")}</span>
-        </span>
-        <ChevronDownIcon size={16} className={`shrink-0 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
+        {currentId ? (
+          <>
+            <Avatar r={current} />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-medium text-slate-100">{current?.name ?? "…"}</span>
+              <span className="block truncate text-xs text-slate-500">{current ? `/${current.slug}` : t("switchStore")}</span>
+            </span>
+          </>
+        ) : (
+          <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-slate-300">
+            <ShieldIcon size={14} className="shrink-0 text-primary-400" />
+            <span className="truncate">{t("platformAdmin")}</span>
+          </span>
+        )}
+        <ChevronDownIcon size={16} className={`shrink-0 text-slate-400 transition-transform ${open ? "-rotate-90" : ""}`} />
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-[calc(100%+0px)] min-w-[15rem] overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-2xl shadow-black/50">
+        <div className="absolute left-full top-0 z-50 ml-3 w-80 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-2xl shadow-black/50">
           <div className="border-b border-slate-800 p-2">
             <div className="relative">
               <SearchIcon size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />

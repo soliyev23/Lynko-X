@@ -19,7 +19,6 @@ import {
   MenuIcon,
   PackageIcon,
   PaletteIcon,
-  ShieldIcon,
   SlidersIcon,
   ClipboardIcon,
   InfoIcon,
@@ -207,14 +206,7 @@ export default function DashboardLayout({
         {open && (
           <div className="border-b border-slate-800 px-4 py-3">
             {role === "ADMIN" ? (
-              storeId ? (
-                <StoreSwitcher currentId={storeId} />
-              ) : (
-                <div className="flex items-center gap-1.5 text-sm text-slate-300">
-                  <ShieldIcon size={14} className="text-primary-400" />
-                  {adminMe ? `${t("platformAdmin")} · ${t(`adminRole_${adminMe.adminRole}` as any)}` : t("platformAdmin")}
-                </div>
-              )
+              <StoreSwitcher currentId={storeId} />
             ) : (
               store && (
                 <>
