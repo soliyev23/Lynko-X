@@ -1,6 +1,7 @@
 "use client";
 
 import { Logo } from "@/components/Logo";
+import { Button } from "@/components/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -97,12 +98,9 @@ export default function RegisterPage() {
             Do'kon manzili: <b>localhost:3001/{form.storeSlug}</b>
           </p>
         )}
-        <button
-          disabled={busy}
-          className="w-full bg-accent-500 hover:bg-accent-400 disabled:opacity-50 text-gray-900 font-medium rounded-lg py-2.5 transition active:bg-accent-600 shadow-md shadow-accent-500/25"
-        >
+        <Button type="submit" variant="accent" size="lg" disabled={busy} className="w-full">
           {busy ? "..." : t("register")}
-        </button>
+        </Button>
         <p className="text-sm text-center text-gray-500">
           {t("haveAccount")}{" "}
           <Link href="/login" className="text-primary-600 font-medium">

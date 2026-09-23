@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { ImageUploader } from "@/components/ImageUploader";
@@ -236,12 +237,9 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <button
-          disabled={busy}
-          className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-medium rounded-lg px-5 py-2.5"
-        >
+        <Button type="submit" variant="primary" size="lg" disabled={busy}>
           {busy ? t("saving") : t("save")}
-        </button>
+        </Button>
       </form>
     </div>
   );

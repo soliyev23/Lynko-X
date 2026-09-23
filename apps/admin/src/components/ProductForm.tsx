@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
@@ -327,12 +328,9 @@ export function ProductForm({
         <span className="text-sm text-gray-700">{t("active")}</span>
       </label>
       <div className="flex gap-3 pt-2">
-        <button
-          disabled={busy}
-          className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-medium rounded-lg px-5 py-2.5"
-        >
+        <Button type="submit" variant="primary" size="lg" disabled={busy}>
           {busy ? t("saving") : t("save")}
-        </button>
+        </Button>
         <button
           type="button"
           onClick={() => router.push("/products")}

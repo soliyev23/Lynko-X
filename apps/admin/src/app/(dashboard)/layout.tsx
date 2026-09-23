@@ -21,6 +21,8 @@ import {
   SlidersIcon,
   StoreIcon,
   UsersIcon,
+  SunIcon,
+  MoonIcon,
 } from "@/components/icons";
 
 interface Store {
@@ -46,6 +48,19 @@ export default function DashboardLayout({
   const [ready, setReady] = useState(false);
   // Sidebar standart holatda yopiq (faqat ikonkalar); ochilganda kontent ustiga chiqadi
   const [open, setOpen] = useState(false);
+  // Rejim: localStorage'da saqlanadi, <html class="dark"> orqali qo'llanadi
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    setDark(document.documentElement.classList.contains("dark"));
+  }, []);
+  const toggleTheme = () => {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    try {
+      localStorage.setItem("lynkox_admin_theme", next ? "dark" : "light");
+    } catch {}
+  };
   const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
@@ -145,7 +160,7 @@ export default function DashboardLayout({
           }`}
         >
           <Link href={home} onClick={close} className="flex items-center gap-2.5" aria-label="LYNKO-X">
-            <LogoMark size={32} className="shrink-0" />
+            <LogoMark size={32} tone="dark" className="shrink-0" />
             {open && (
               <span className="text-lg font-extrabold tracking-tight leading-none">
                 LYNKO<span className="text-primary-400">-X</span>
@@ -247,6 +262,17 @@ export default function DashboardLayout({
               {tip(t("switchLang"))}
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-pressed={dark}
+            className={`${itemBase} ${itemIdle} w-full text-left`}
+          >
+            {dark ? <SunIcon size={18} className="shrink-0" /> : <MoonIcon size={18} className="shrink-0" />}
+            {open && <span className="truncate">{dark ? t("lightMode") : t("darkMode")}</span>}
+            {tip(dark ? t("lightMode") : t("darkMode"))}
+          </button>
 
           <button
             type="button"

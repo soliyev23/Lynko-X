@@ -9,6 +9,9 @@
    yoki CSS o'zgaruvchilari orqali ishlatadi.
    ============================================================ */
 @theme {
+  /* Sarlavha va logotip shrifti (Manrope, root layout'da yuklanadi) */
+  --font-display: var(--font-manrope), system-ui, sans-serif;
+
   /* Brend: chuqur firuza (Samarqand va Buxoro koshinlari) */
   --color-primary-50: #effaf9;
   --color-primary-100: #d5f2f0;
@@ -133,3 +136,51 @@ body {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* ============================================================
+   Dark rejim. Sahifalar gray-* klasslarda yozilgan, shuning uchun
+   qorong'i rejimda kulrang shkala teskari qiymatlarga o'tkaziladi:
+   bitta joyda, komponentlarga tegmasdan.
+   ============================================================ */
+.dark {
+  --color-gray-50: #111b1f;
+  --color-gray-100: #16232a;
+  --color-gray-200: #243239;
+  --color-gray-300: #34454d;
+  --color-gray-400: #7d8e95;
+  --color-gray-500: #9aa9b5;
+  --color-gray-600: #b6c2cb;
+  --color-gray-700: #cbd5e1;
+  --color-gray-800: #dde5ec;
+  --color-gray-900: #eef2f5;
+
+  /* Brend: och fonlar to'q, matnlar och; 600 tugma foni 400 tonga */
+  --color-primary-50: #0f2f2e;
+  --color-primary-100: #124040;
+  --color-primary-200: #14504f;
+  --color-primary-600: #3fb2ae;
+  --color-primary-700: #76cfcb;
+  --color-primary-800: #abe4e1;
+  --color-primary-900: #d5f2f0;
+
+  --color-success-50: #0b2e1a; --color-success-100: #14532d; --color-success-200: #166534;
+  --color-success-600: #4ade80; --color-success-700: #86efac; --color-success-800: #bbf7d0;
+  --color-error-50: #3b0d0d; --color-error-100: #7f1d1d; --color-error-200: #991b1b;
+  --color-error-600: #f87171; --color-error-700: #fca5a5; --color-error-800: #fecaca;
+  --color-warning-50: #2d2306; --color-warning-100: #713f12; --color-warning-200: #854d0e;
+  --color-warning-600: #facc15; --color-warning-700: #fde047; --color-warning-800: #fef08a;
+  --color-info-50: #0f1f3d; --color-info-100: #1e3a8a; --color-info-200: #1e40af;
+  --color-info-600: #60a5fa; --color-info-700: #93c5fd; --color-info-800: #bfdbfe;
+}
+.dark .bg-white { background-color: var(--surface-card); }
+.dark .bg-white\/95 { background-color: rgb(17 27 31 / 0.95); }
+.dark .bg-white\/90 { background-color: rgb(17 27 31 / 0.9); }
+/* Och firuza tugma ustida matn to'q bo'lsin (kontrast) */
+.dark .bg-primary-600 { color: #0b1215; }
+/* Amber tugmalar ustida matn har doim to'q */
+.dark .bg-accent-500, .dark .bg-accent-400, .dark .bg-accent-600 { color: #1f2937; }

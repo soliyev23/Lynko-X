@@ -5,6 +5,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { money } from "@/lib/format";
 import { useI18n } from "@/lib/i18n";
+import { EmptyRow } from "@/components/EmptyState";
 import { CheckIcon, MinusIcon, PlusIcon } from "@/components/icons";
 
 interface Product {
@@ -150,11 +151,7 @@ export default function ProductsPage() {
               </tr>
             ))}
             {products?.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-gray-400">
-                  {t("empty")}
-                </td>
-              </tr>
+                <EmptyRow colSpan={6} kind="products" title={t("emptyProductsTitle")} hint={t("emptyProductsHint")} action={<Link href="/products/new" className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">{t("addProduct")}</Link>} />
             )}
           </tbody>
         </table>

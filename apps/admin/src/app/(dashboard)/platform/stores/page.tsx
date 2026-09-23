@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { dateTime } from "@/lib/format";
 import { useI18n, type TKey } from "@/lib/i18n";
+import { EmptyRow } from "@/components/EmptyState";
 import { ExternalLinkIcon, SearchIcon } from "@/components/icons";
 import { SubscriptionBadge, type SubscriptionInfo } from "@/components/badges";
 import { dateOnly, tpl } from "@/lib/format";
@@ -167,11 +168,7 @@ export default function PlatformStoresPage() {
               </tr>
             ))}
             {stores?.length === 0 && (
-              <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-gray-400">
-                  {t("empty")}
-                </td>
-              </tr>
+                <EmptyRow colSpan={8} kind="stores" title={t("emptyStoresTitle")} hint={t("emptyStoresHint")} />
             )}
           </tbody>
         </table>

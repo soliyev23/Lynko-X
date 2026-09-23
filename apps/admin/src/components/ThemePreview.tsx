@@ -1,8 +1,16 @@
 import type { ThemeOption } from "@/lib/themes";
 
-/** Shablonning kichik sxematik ko'rinishi — rasm emas, CSS bilan chiziladi. */
-export function ThemePreview({ theme }: { theme: ThemeOption }) {
-  const c = theme.colors;
+/** Shablonning kichik ko'rinishi: CSS bilan chiziladi, mahsulot kartochkalarida namuna rasmlar. */
+const SAMPLE_IMAGES = ["/samples/tshirt.svg", "/samples/sneaker.svg", "/samples/backpack.svg", "/samples/watch.svg", "/samples/headphones.svg"];
+
+/** Sotuvchi brend rangi bo'lsa, preview'dagi primary ranglar shunga almashadi */
+function withBrand(colors: ThemeOption["colors"], brandColor?: string | null) {
+  if (!brandColor || !/^#[0-9a-fA-F]{6}$/.test(brandColor)) return colors;
+  return { ...colors, primary: brandColor, primarySoft: `color-mix(in srgb, ${brandColor} 14%, ${colors.surface})` };
+}
+
+export function ThemePreview({ theme, brandColor }: { theme: ThemeOption; brandColor?: string | null }) {
+  const c = withBrand(theme.colors, brandColor);
   const r = theme.radius;
   const card = {
     background: c.surface,
@@ -117,12 +125,19 @@ export function ThemePreview({ theme }: { theme: ThemeOption }) {
           {cards.map((_, i) => (
             <div key={i} className="flex flex-col gap-1 min-h-0" style={card}>
               <div
-                className="flex-1 min-h-0"
+                className="flex-1 min-h-0 overflow-hidden"
                 style={{
                   background: c.primarySoft,
                   borderRadius: `${r}px ${r}px 0 0`,
                 }}
-              />
+              >
+                <img
+                  src={SAMPLE_IMAGES[i % SAMPLE_IMAGES.length]}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  style={theme.dark ? { filter: "brightness(0.85)" } : undefined}
+                />
+              </div>
               <div className="px-1 pb-1 flex flex-col gap-0.5">
                 <span
                   className="h-1 w-3/4 rounded-sm"

@@ -239,7 +239,7 @@ export default function LandingView({ locale }: { locale: Locale }) {
             {c.hero.badge}
           </span>
           <h1
-            className="lp-enter text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] max-w-4xl mx-auto text-balance break-words"
+            className="lp-enter font-display text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.1] max-w-4xl mx-auto text-balance break-words"
             style={enter(80)}
           >
             {c.hero.title1}{" "}
@@ -272,6 +272,36 @@ export default function LandingView({ locale }: { locale: Locale }) {
               </span>
             ))}
           </div>
+
+          {/* Haqiqiy mahsulot: boshqaruv paneli brauzer ramkasida, vitrina telefonda */}
+          <div className="lp-enter relative mx-auto mt-14 max-w-5xl pb-10 sm:pb-14 text-left" style={enter(400)}>
+            <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-2xl shadow-primary-900/10 dark:shadow-black/40">
+              <div className="flex items-center gap-1.5 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 px-4 py-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-gray-300 dark:bg-gray-700" />
+                <span className="h-2.5 w-2.5 rounded-full bg-gray-300 dark:bg-gray-700" />
+                <span className="h-2.5 w-2.5 rounded-full bg-gray-300 dark:bg-gray-700" />
+                <span className="ml-3 hidden sm:block h-5 w-56 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 text-[11px] leading-5 text-gray-400">
+                  admin.lynkox.uz
+                </span>
+              </div>
+              <img
+                src="/landing/admin-dashboard.png"
+                alt={c.hero.mockupAdmin}
+                width={1280}
+                height={800}
+                className="block w-full h-auto"
+              />
+            </div>
+            <div className="absolute -bottom-2 right-2 sm:right-8 w-[124px] sm:w-[176px] overflow-hidden rounded-[1.6rem] sm:rounded-[2rem] border-[5px] sm:border-[6px] border-gray-900 dark:border-gray-700 bg-gray-900 shadow-2xl shadow-black/30">
+              <img
+                src="/landing/store-mobile.png"
+                alt={c.hero.mockupStore}
+                width={390}
+                height={780}
+                className="block w-full h-auto"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -279,7 +309,7 @@ export default function LandingView({ locale }: { locale: Locale }) {
       <section id="features" className={`${band} scroll-mt-16`}>
         <div className="max-w-6xl mx-auto px-4 py-20">
           <div className="lp-reveal text-center">
-            <h2 className="text-3xl font-bold text-balance">{c.features.title}</h2>
+            <h2 className="font-display text-3xl font-extrabold tracking-tight text-balance">{c.features.title}</h2>
             <p className={`${muted} mt-3 max-w-2xl mx-auto text-pretty`}>{c.features.subtitle}</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
@@ -309,7 +339,7 @@ export default function LandingView({ locale }: { locale: Locale }) {
 
       {/* Qanday ishlaydi */}
       <section id="how" className="max-w-6xl mx-auto px-4 py-20 scroll-mt-16">
-        <h2 className="lp-reveal text-3xl font-bold text-center text-balance">{c.how.title}</h2>
+        <h2 className="lp-reveal font-display text-3xl font-extrabold tracking-tight text-center text-balance">{c.how.title}</h2>
         <div className="relative grid md:grid-cols-3 gap-8 mt-12">
           {/* Qadamlarni bog'lovchi chiziq (faqat keng ekranda) */}
           <div
@@ -336,7 +366,7 @@ export default function LandingView({ locale }: { locale: Locale }) {
       <section id="pricing" className={`${band} scroll-mt-16`}>
         <div className="max-w-6xl mx-auto px-4 py-20">
           <div className="lp-reveal text-center">
-            <h2 className="text-3xl font-bold text-balance">{c.pricing.title}</h2>
+            <h2 className="font-display text-3xl font-extrabold tracking-tight text-balance">{c.pricing.title}</h2>
             <p className={`${muted} mt-3 text-pretty`}>{c.pricing.subtitle}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6 mt-12 items-stretch">
@@ -410,7 +440,7 @@ export default function LandingView({ locale }: { locale: Locale }) {
             <div className="w-12 h-12 rounded-xl bg-primary-500/15 text-primary-400 ring-1 ring-primary-400/30 flex items-center justify-center mx-auto mb-5">
               <ZapIcon size={24} />
             </div>
-            <h2 className="text-3xl font-bold text-balance">{c.cta.title}</h2>
+            <h2 className="font-display text-3xl font-extrabold tracking-tight text-balance">{c.cta.title}</h2>
             <p className="text-gray-300 mt-3 max-w-xl mx-auto text-pretty">{c.cta.text}</p>
             <a
               href={`${ADMIN_URL}/register`}

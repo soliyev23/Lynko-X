@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+  <rect width="800" height="800" fill="#ecfdf5"/>
+  <circle cx="400" cy="420" r="250" fill="#d1fae5"/>
+  <!-- ustki qism (yon ko'rinish, uchi o'ngda) -->
+  <path d="M130 505 L130 430 C130 395 150 378 185 376 L300 372 C330 372 348 352 364 330 L392 298 C420 290 450 312 482 340 C540 392 610 420 662 440 C692 452 692 505 692 505 Z" fill="#ffffff" stroke="#6ee7b7" stroke-width="10" stroke-linejoin="round"/>
+  <!-- tovon qismi -->
+  <path d="M135 500 L135 432 C135 400 152 384 185 382 L222 380 L222 500 Z" fill="#a7f3d0"/>
+  <!-- oyoq kiradigan joy -->
+  <path d="M190 384 C232 402 288 400 330 378" fill="none" stroke="#6ee7b7" stroke-width="10" stroke-linecap="round"/>
+  <!-- til va bog'ichlar -->
+  <path d="M392 298 C420 290 450 312 482 340 L446 372 L364 330 Z" fill="#d1fae5"/>
+  <path d="M372 372 L420 350 M392 398 L440 376 M412 424 L460 402" fill="none" stroke="#059669" stroke-width="12" stroke-linecap="round"/>
+  <!-- oldi (uchi) -->
+  <path d="M575 500 C610 470 640 450 662 440 C692 452 692 505 692 505 L575 505 Z" fill="#a7f3d0"/>
+  <!-- yon chiziq -->
+  <path d="M245 470 C330 425 420 440 520 478" fill="none" stroke="#059669" stroke-width="14" stroke-linecap="round"/>
+  <!-- taglik -->
+  <path d="M120 505 L700 505 C716 505 726 516 726 532 L726 548 C726 566 712 580 694 580 L136 580 C118 580 104 566 104 548 L104 532 C104 516 114 505 120 505 Z" fill="#059669"/>
+  <path d="M132 548 L698 548" stroke="#34d399" stroke-width="8" stroke-linecap="round"/>
+</svg>

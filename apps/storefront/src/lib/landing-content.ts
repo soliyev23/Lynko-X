@@ -46,6 +46,8 @@ export interface Content {
     start: string;
     demo: string;
     bullets: string[];
+    mockupAdmin: string;
+    mockupStore: string;
   };
   features: { title: string; subtitle: string; items: { title: string; text: string }[] };
   how: { title: string; steps: { title: string; text: string }[] };
@@ -88,6 +90,8 @@ export const CONTENT: Record<Locale, Content> = {
       start: "Bepul boshlash",
       demo: "Demo do'konni ko'rish",
       bullets: ["Karta talab qilinmaydi", "Kod yozish shart emas", "O'zbek va rus tillarida"],
+      mockupAdmin: "LYNKO-X boshqaruv paneli: tushum, buyurtmalar va ombor bir ekranda",
+      mockupStore: "Do'kon vitrinasi telefonda",
     },
     features: {
       title: "Savdo uchun kerak bo'lgan hamma narsa",
@@ -202,6 +206,8 @@ export const CONTENT: Record<Locale, Content> = {
       start: "Начать бесплатно",
       demo: "Посмотреть демо-магазин",
       bullets: ["Карта не требуется", "Без программирования", "На узбекском и русском"],
+      mockupAdmin: "Панель управления LYNKO-X: выручка, заказы и склад на одном экране",
+      mockupStore: "Витрина магазина на телефоне",
     },
     features: {
       title: "Всё, что нужно для продаж",

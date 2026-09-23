@@ -5,6 +5,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { dateTime, money } from "@/lib/format";
 import { useI18n, type TKey } from "@/lib/i18n";
+import { EmptyRow } from "@/components/EmptyState";
 import { PaymentBadge, StatusBadge } from "@/components/badges";
 
 interface Order {
@@ -98,11 +99,7 @@ export default function OrdersPage() {
               </tr>
             ))}
             {orders?.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-gray-400">
-                  {t("empty")}
-                </td>
-              </tr>
+                <EmptyRow colSpan={6} kind="orders" title={t("emptyOrdersTitle")} hint={t("emptyOrdersHint")} />
             )}
           </tbody>
         </table>

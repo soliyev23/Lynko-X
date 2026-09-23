@@ -108,7 +108,7 @@ function DesignPageInner() {
                   : "border-gray-200 hover:border-primary-300"
               }`}
             >
-              <ThemePreview theme={opt} />
+              <ThemePreview theme={opt} brandColor={store.brandColor} />
               <div className="flex items-start justify-between gap-2 mt-3">
                 <div>
                   <div className="font-semibold">{opt.name}</div>

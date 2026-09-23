@@ -5,6 +5,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { dateTime, money } from "@/lib/format";
 import { useI18n, type TKey } from "@/lib/i18n";
+import { EmptyRow } from "@/components/EmptyState";
 import {
   BarChart,
   HBars,
@@ -170,7 +171,7 @@ export default function PlatformStatsPage() {
                 </tr>
               ))}
               {an.topStores.length === 0 && (
-                <tr><td colSpan={4} className="px-4 py-10 text-center text-gray-400">{t("empty")}</td></tr>
+                <EmptyRow colSpan={4} kind="stores" title={t("emptyGenericTitle")} />
               )}
             </tbody>
           </table>
@@ -206,7 +207,7 @@ export default function PlatformStatsPage() {
                 </tr>
               ))}
               {stats.latestStores.length === 0 && (
-                <tr><td colSpan={4} className="px-4 py-10 text-center text-gray-400">{t("empty")}</td></tr>
+                <EmptyRow colSpan={4} kind="stores" title={t("emptyGenericTitle")} />
               )}
             </tbody>
           </table>

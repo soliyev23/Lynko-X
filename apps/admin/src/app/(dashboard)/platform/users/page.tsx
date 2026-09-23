@@ -5,6 +5,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { dateTime } from "@/lib/format";
 import { useI18n, type TKey } from "@/lib/i18n";
+import { EmptyRow } from "@/components/EmptyState";
 import { SearchIcon } from "@/components/icons";
 
 interface UserRow {
@@ -94,7 +95,7 @@ export default function PlatformUsersPage() {
               </tr>
             ))}
             {users?.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-10 text-center text-gray-400">{t("empty")}</td></tr>
+              <EmptyRow colSpan={5} kind="users" title={t("emptyUsersTitle")} />
             )}
           </tbody>
         </table>

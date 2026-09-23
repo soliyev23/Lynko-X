@@ -1,6 +1,7 @@
 "use client";
 
 import { Logo } from "@/components/Logo";
+import { Button } from "@/components/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -72,12 +73,9 @@ export default function LoginPage() {
             className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </label>
-        <button
-          disabled={busy}
-          className="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-medium rounded-lg py-2.5 transition"
-        >
+        <Button type="submit" variant="primary" size="lg" disabled={busy} className="w-full">
           {busy ? "..." : t("login")}
-        </button>
+        </Button>
         <p className="text-sm text-center text-gray-500">
           {t("noAccount")}{" "}
           <Link href="/register" className="text-primary-600 font-medium">

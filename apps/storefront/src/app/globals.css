@@ -9,6 +9,9 @@
    yoki CSS o'zgaruvchilari orqali ishlatadi.
    ============================================================ */
 @theme {
+  /* Sarlavha va logotip shrifti (Manrope, root layout'da yuklanadi) */
+  --font-display: var(--font-manrope), system-ui, sans-serif;
+
   /* Brend: chuqur firuza (Samarqand va Buxoro koshinlari) */
   --color-primary-50: #effaf9;
   --color-primary-100: #d5f2f0;
@@ -270,17 +273,19 @@ body {
   }
 }
 
-/* Nuqtali fon (hero va CTA) */
+/* Girih naqshi (hero va CTA foni): sakkiz qirrali yulduzlar panjarasi, juda nozik */
 .lp-grid {
-  --lp-dot: rgb(17 24 39 / 0.1);
-  background-image: radial-gradient(var(--lp-dot) 1px, transparent 1.5px);
-  background-size: 24px 24px;
+  --lp-tile-opacity: 0.11;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56' fill='none' stroke='%230f4242' stroke-width='1'%3E%3Cpath d='M16 16h24v24H16z'/%3E%3Cpath d='M28 11l17 17-17 17-17-17z'/%3E%3Cpath d='M28 0v11M28 45v11M0 28h11M45 28h11'/%3E%3C/svg%3E");
+  background-size: 56px 56px;
+  opacity: var(--lp-tile-opacity);
   -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 72%);
   mask-image: radial-gradient(ellipse at center, black 30%, transparent 72%);
 }
 .dark .lp-grid,
 .lp-grid-on-dark {
-  --lp-dot: rgb(255 255 255 / 0.09);
+  --lp-tile-opacity: 0.09;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56' fill='none' stroke='%23abe4e1' stroke-width='1'%3E%3Cpath d='M16 16h24v24H16z'/%3E%3Cpath d='M28 11l17 17-17 17-17-17z'/%3E%3Cpath d='M28 0v11M28 45v11M0 28h11M45 28h11'/%3E%3C/svg%3E");
 }
 
 /* Sahifa ochilganda hero elementlari ketma-ket paydo bo'ladi */
