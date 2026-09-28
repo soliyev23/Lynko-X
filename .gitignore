@@ -9,3 +9,6 @@ build/
 packages/db/client/
 apps/api/uploads/
 coverage/
+
+# TypeScript incremental build info
+*.tsbuildinfo
