@@ -80,6 +80,11 @@ export default function DashboardLayout({
   useEffect(() => {
     sheetRef.current?.scrollTo({ top: 0 });
   }, [pathname]);
+  // Qobiq ochiq paytda hujjatning o'zi aylanmaydi (globals.css: .app-shell)
+  useEffect(() => {
+    document.documentElement.classList.add("app-shell");
+    return () => document.documentElement.classList.remove("app-shell");
+  }, []);
 
   useEffect(() => {
     if (!getToken()) {
@@ -353,7 +358,7 @@ export default function DashboardLayout({
       {/* Kontent: to'q ramka ichida yumaloq burchakli och varaq */}
       <main className="h-full min-w-0 pl-16">
         <div className="h-full p-2 pl-0">
-          <div ref={sheetRef} className="h-full overflow-y-auto rounded-2xl bg-surface-page ring-1 ring-black/5 dark:ring-white/5">
+          <div ref={sheetRef} className="h-full overflow-y-auto overscroll-contain rounded-2xl bg-surface-page ring-1 ring-black/5 dark:ring-white/5">
             <div className="mx-auto w-full max-w-7xl p-8 overflow-x-auto"><AdminProvider value={adminMe}>{children}</AdminProvider></div>
           </div>
         </div>

@@ -185,3 +185,20 @@ h1, h2, h3 {
 .dark .bg-primary-600 { color: #0b1215; }
 /* Amber tugmalar ustida matn har doim to'q */
 .dark .bg-accent-500, .dark .bg-accent-400, .dark .bg-accent-600 { color: #1f2937; }
+
+/* ============================================================
+   Admin qobig'i: hujjatning o'zi aylanmaydi, faqat varaq ichi.
+   Trackpad'da chegaradan oshib tortilganda (overscroll) ham
+   oyna siljimaydi va och fon ko'rinmaydi.
+   ============================================================ */
+html {
+  overscroll-behavior: none;
+}
+.app-shell,
+.app-shell body {
+  height: 100%;
+  overflow: hidden;
+}
+.app-shell {
+  background-color: var(--color-slate-900);
+}
