@@ -37,6 +37,16 @@ type Role = "MERCHANT" | "ADMIN";
 
 const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "http://localhost:3001";
 
+/** Do'kon nomidan avatar uchun bosh harflar (ko'pi bilan ikkita) */
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -145,13 +155,14 @@ export default function DashboardLayout({
         {label}
       </span>
     );
-  const itemBase = `group relative flex items-center h-10 rounded-lg text-sm font-medium transition-colors ${
+  const itemBase = `group relative flex items-center h-9 rounded-lg text-sm font-medium transition-colors ${
     open ? "gap-3 px-3" : "justify-center"
   }`;
-  const itemIdle = "text-slate-300 hover:bg-slate-800 hover:text-white";
+  const itemIdle = "text-slate-400 hover:bg-white/[0.06] hover:text-white";
+  const itemActive = "bg-white/10 text-white";
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-slate-900">
       {/* Ochiq holatda orqa fon: bosilsa yopiladi */}
       {open && (
         <div
@@ -169,7 +180,7 @@ export default function DashboardLayout({
       >
         {/* Logo va ochish/yopish tugmasi */}
         <div
-          className={`border-b border-slate-800 ${
+          className={`${
             open ? "flex items-center gap-3 h-16 px-4" : "flex flex-col items-center gap-1 py-3"
           }`}
         >
@@ -196,23 +207,14 @@ export default function DashboardLayout({
         </div>
 
         {/* Do'kon / rol */}
-        {open && (
-          <div className="border-b border-slate-800 px-4 py-3">
-            {role === "ADMIN" ? (
-              <StoreSwitcher currentId={storeId} />
-            ) : (
-              store && (
-                <>
-                  <div className="truncate text-sm font-medium text-slate-200">{store.name}</div>
-                  <div className="text-xs text-slate-500">{t("merchantPanel")}</div>
-                </>
-              )
-            )}
+        {open && role === "ADMIN" && (
+          <div className="px-3 pb-2">
+            <StoreSwitcher currentId={storeId} />
           </div>
         )}
 
         {/* Bo'limlar */}
-        <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
+        <nav className="flex-1 space-y-0.5 px-2 py-1 overflow-y-auto">
           {storeNav.length > 0 && (
             <>
               {open && <div className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">{t("storeSections")}</div>}
@@ -224,7 +226,7 @@ export default function DashboardLayout({
                     href={item.href}
                     onClick={close}
                     aria-current={active ? "page" : undefined}
-                    className={`${itemBase} ${active ? "bg-primary-600 text-white" : itemIdle}`}
+                    className={`${itemBase} ${active ? itemActive : itemIdle}`}
                   >
                     <item.icon size={18} className="shrink-0" />
                     {open && <span className="truncate">{item.label}</span>}
@@ -232,7 +234,7 @@ export default function DashboardLayout({
                   </Link>
                 );
               })}
-              <div className="my-2 border-t border-slate-800" />
+              <div className="my-2 border-t border-white/[0.08]" />
               {open && <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">{t("platformSections")}</div>}
             </>
           )}
@@ -247,7 +249,7 @@ export default function DashboardLayout({
                 href={item.href}
                 onClick={close}
                 aria-current={active ? "page" : undefined}
-                className={`${itemBase} ${active ? "bg-primary-600 text-white" : itemIdle}`}
+                className={`${itemBase} ${active ? itemActive : itemIdle}`}
               >
                 <item.icon size={18} className="shrink-0" />
                 {open && <span className="truncate">{item.label}</span>}
@@ -258,7 +260,7 @@ export default function DashboardLayout({
         </nav>
 
         {/* Pastki qism: vitrina, til, chiqish */}
-        <div className="space-y-1 border-t border-slate-800 p-2">
+        <div className="space-y-0.5 border-t border-white/[0.08] p-2">
           {role === "MERCHANT" && store && (
             <a
               href={`${STOREFRONT_URL}/${store.slug}`}
@@ -322,11 +324,34 @@ export default function DashboardLayout({
             {tip(t("logout"))}
           </button>
         </div>
+
+        {/* Sotuvchi: do'kon identifikatori (avatar + nom) */}
+        {role === "MERCHANT" && store && (
+          <div className={`border-t border-white/[0.08] py-3 ${open ? "px-3" : "flex justify-center px-2"}`}>
+            <div className={`group relative flex items-center ${open ? "gap-3" : ""}`}>
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-600 text-xs font-bold text-white">
+                {initials(store.name)}
+              </span>
+              {open && (
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold text-white">{store.name}</div>
+                  <div className="truncate text-xs text-slate-500">{t("merchantPanel")}</div>
+                </div>
+              )}
+              {tip(store.name)}
+            </div>
+          </div>
+        )}
       </aside>
 
       {/* Kontent doim tor panel kengligida chapdan joy qoldiradi; panel ochilganda siljimaydi */}
+      {/* Kontent: to'q ramka ichida yumaloq burchakli och varaq */}
       <main className="min-h-screen min-w-0 pl-16">
-        <div className="mx-auto w-full max-w-7xl p-8 overflow-x-auto"><AdminProvider value={adminMe}>{children}</AdminProvider></div>
+        <div className="p-2 pl-0">
+          <div className="min-h-[calc(100vh-1rem)] rounded-2xl bg-surface-page ring-1 ring-black/5 dark:ring-white/5">
+            <div className="mx-auto w-full max-w-7xl p-8 overflow-x-auto"><AdminProvider value={adminMe}>{children}</AdminProvider></div>
+          </div>
+        </div>
       </main>
     </div>
   );

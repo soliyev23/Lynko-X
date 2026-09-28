@@ -180,6 +180,7 @@ h1, h2, h3 {
 .dark .bg-white { background-color: var(--surface-card); }
 .dark .bg-white\/95 { background-color: rgb(17 27 31 / 0.95); }
 .dark .bg-white\/90 { background-color: rgb(17 27 31 / 0.9); }
+.dark .bg-white\/80 { background-color: rgb(17 27 31 / 0.8); }
 /* Och firuza tugma ustida matn to'q bo'lsin (kontrast) */
 .dark .bg-primary-600 { color: #0b1215; }
 /* Amber tugmalar ustida matn har doim to'q */
