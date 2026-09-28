@@ -18,8 +18,6 @@ import {
   LogOutIcon,
   MenuIcon,
   PackageIcon,
-  PaletteIcon,
-  SlidersIcon,
   ClipboardIcon,
   InfoIcon,
   ListIcon,
@@ -114,13 +112,8 @@ export default function DashboardLayout({
     );
   }
 
-  const merchantNav = [
-    { href: "/", label: t("dashboard"), icon: HomeIcon },
-    { href: "/products", label: t("products"), icon: PackageIcon },
-    { href: "/orders", label: t("orders"), icon: CartIcon },
-    { href: "/design", label: t("design"), icon: PaletteIcon },
-    { href: "/settings", label: t("settings"), icon: SlidersIcon },
-  ];
+  // Sotuvchi paneli boshidan qurilmoqda: hozircha yagona bo'lim
+  const merchantNav = [{ href: "/", label: t("home"), icon: HomeIcon }];
   const platformNav = [
     { href: "/platform", label: t("platformStats"), icon: BarChartIcon },
     { href: "/platform/stores", label: t("stores"), icon: StoreIcon },

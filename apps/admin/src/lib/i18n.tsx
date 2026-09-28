@@ -12,6 +12,7 @@ export type Locale = "uz" | "ru";
 
 const uz = {
   dashboard: "Boshqaruv paneli",
+  home: "Home",
   products: "Mahsulotlar",
   orders: "Buyurtmalar",
   settings: "Sozlamalar",
@@ -328,6 +329,7 @@ const uz = {
 
 const ru: Record<keyof typeof uz, string> = {
   dashboard: "Панель управления",
+  home: "Home",
   products: "Товары",
   orders: "Заказы",
   settings: "Настройки",
