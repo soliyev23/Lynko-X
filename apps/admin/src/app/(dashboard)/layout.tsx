@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, getToken, setToken } from "@/lib/api";
@@ -75,6 +75,11 @@ export default function DashboardLayout({
     } catch {}
   };
   const close = useCallback(() => setOpen(false), []);
+  // Kontent varaq ichida aylanadi; sahifa almashganda varaq boshiga qaytadi
+  const sheetRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    sheetRef.current?.scrollTo({ top: 0 });
+  }, [pathname]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -162,7 +167,7 @@ export default function DashboardLayout({
   const itemActive = "bg-white/10 text-white";
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="h-dvh overflow-hidden bg-slate-900">
       {/* Ochiq holatda orqa fon: bosilsa yopiladi */}
       {open && (
         <div
@@ -346,9 +351,9 @@ export default function DashboardLayout({
 
       {/* Kontent doim tor panel kengligida chapdan joy qoldiradi; panel ochilganda siljimaydi */}
       {/* Kontent: to'q ramka ichida yumaloq burchakli och varaq */}
-      <main className="min-h-screen min-w-0 pl-16">
-        <div className="p-2 pl-0">
-          <div className="min-h-[calc(100vh-1rem)] rounded-2xl bg-surface-page ring-1 ring-black/5 dark:ring-white/5">
+      <main className="h-full min-w-0 pl-16">
+        <div className="h-full p-2 pl-0">
+          <div ref={sheetRef} className="h-full overflow-y-auto rounded-2xl bg-surface-page ring-1 ring-black/5 dark:ring-white/5">
             <div className="mx-auto w-full max-w-7xl p-8 overflow-x-auto"><AdminProvider value={adminMe}>{children}</AdminProvider></div>
           </div>
         </div>
