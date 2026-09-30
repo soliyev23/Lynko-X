@@ -35,6 +35,14 @@ interface Store {
 
 type Role = "MERCHANT" | "ADMIN";
 
+interface NavItem {
+  href: string;
+  label: string;
+  icon: typeof HomeIcon;
+  /** Ichki bo'limlar: sidebar ochiq va bo'lim faol bo'lganda ko'rinadi */
+  children?: { href: string; label: string }[];
+}
+
 const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "http://localhost:3001";
 
 /** Do'kon nomidan avatar uchun bosh harflar (ko'pi bilan ikkita) */
@@ -132,9 +140,20 @@ export default function DashboardLayout({
     );
   }
 
-  // Sotuvchi paneli boshidan qurilmoqda: hozircha yagona bo'lim
-  const merchantNav = [{ href: "/", label: t("home"), icon: HomeIcon }];
-  const platformNav = [
+  // Sotuvchi paneli boshidan qurilmoqda: bo'limlar birma-bir qaytariladi
+  const merchantNav: NavItem[] = [
+    { href: "/", label: t("home"), icon: HomeIcon },
+    {
+      href: "/orders",
+      label: t("orders"),
+      icon: CartIcon,
+      children: [
+        { href: "/orders/drafts", label: t("drafts") },
+        { href: "/orders/abandoned", label: t("abandonedCheckouts") },
+      ],
+    },
+  ];
+  const platformNav: NavItem[] = [
     { href: "/platform", label: t("platformStats"), icon: BarChartIcon },
     { href: "/platform/stores", label: t("stores"), icon: StoreIcon },
     { href: "/platform/orders", label: t("orders"), icon: ListIcon },
@@ -250,21 +269,44 @@ export default function DashboardLayout({
           )}
           {nav.map((item) => {
             // Do'kon ichida platforma bo'limlari faol bo'lmaydi (do'kon guruhi ko'rsatadi)
-            const active = isRoot(item.href)
+            const inSection = isRoot(item.href)
               ? pathname === item.href
               : !storeId && pathname.startsWith(item.href);
+            const activeChild = item.children?.find((c) => pathname.startsWith(c.href));
+            const active = inSection && !activeChild;
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={close}
-                aria-current={active ? "page" : undefined}
-                className={`${itemBase} ${active ? itemActive : itemIdle}`}
-              >
-                <item.icon size={18} className="shrink-0" />
-                {open && <span className="truncate">{item.label}</span>}
-                {tip(item.label)}
-              </Link>
+              <div key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={close}
+                  aria-current={active ? "page" : undefined}
+                  className={`${itemBase} ${active ? itemActive : itemIdle}`}
+                >
+                  <item.icon size={18} className="shrink-0" />
+                  {open && <span className="truncate">{item.label}</span>}
+                  {tip(item.label)}
+                </Link>
+                {open && item.children && inSection && (
+                  <div className="mb-1 mt-0.5 space-y-0.5">
+                    {item.children.map((child) => {
+                      const childActive = child === activeChild;
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={close}
+                          aria-current={childActive ? "page" : undefined}
+                          className={`flex h-8 items-center rounded-lg pl-11 pr-3 text-[13px] font-medium transition-colors ${
+                            childActive ? "bg-white/10 text-white" : "text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          <span className="truncate">{child.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>

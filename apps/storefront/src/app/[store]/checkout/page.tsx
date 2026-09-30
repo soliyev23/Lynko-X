@@ -1,11 +1,28 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, type StoreInfo } from "@/lib/api";
-import { useCart } from "@/lib/cart";
+import { useCart, type CartItem } from "@/lib/cart";
 import { money } from "@/lib/format";
 import { BanknoteIcon, CreditCardIcon } from "@/components/icons";
+
+/** Tiklash havolasi orqali qaytgan savat va kontaktlar */
+interface RecoveredSession {
+  customerName: string | null;
+  phone: string;
+  address: string | null;
+  items: {
+    productId: string;
+    variantId: string | null;
+    variantName: string | null;
+    name: string;
+    price: number;
+    image: string | null;
+    stock: number;
+    quantity: number;
+  }[];
+}
 
 export default function CheckoutPage({
   params,
@@ -14,7 +31,7 @@ export default function CheckoutPage({
 }) {
   const { store: slug } = use(params);
   const router = useRouter();
-  const { items, subtotal, clear } = useCart();
+  const { items, subtotal, clear, replaceAll, loaded } = useCart();
   const [store, setStore] = useState<StoreInfo | null>(null);
   const [form, setForm] = useState({
     customerName: "",
@@ -25,10 +42,92 @@ export default function CheckoutPage({
   });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  // Checkout sessiyasi: telefon kiritilgach savat serverda saqlanadi (tugallanmagan xaridlar)
+  const sessionKey = `lynkox_checkout_${slug}`;
+  const sessionToken = useRef<string | null>(null);
+  const [recoverChecked, setRecoverChecked] = useState(false);
 
   useEffect(() => {
     api<StoreInfo>(`/storefront/${slug}`).then(setStore).catch(console.error);
   }, [slug]);
+
+  // Tiklash havolasi (?recover=TOKEN): savat va kontaktlar qaytariladi
+  useEffect(() => {
+    try {
+      sessionToken.current = localStorage.getItem(sessionKey);
+    } catch {}
+    const recover = new URLSearchParams(window.location.search).get("recover");
+    if (!recover) {
+      setRecoverChecked(true);
+      return;
+    }
+    api<RecoveredSession>(`/storefront/${slug}/checkout-session/${recover}`)
+      .then((s) => {
+        const restored: CartItem[] = s.items.map((i) => ({
+          productId: i.productId,
+          variantId: i.variantId,
+          variantName: i.variantName,
+          name: i.name,
+          price: i.price,
+          image: i.image,
+          stock: i.stock,
+          quantity: i.quantity,
+        }));
+        replaceAll(restored);
+        setForm((f) => ({
+          ...f,
+          customerName: s.customerName ?? "",
+          phone: s.phone,
+          address: s.address ?? "",
+        }));
+        sessionToken.current = recover;
+        try {
+          localStorage.setItem(sessionKey, recover);
+        } catch {}
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        window.history.replaceState(null, "", `/${slug}/checkout`);
+        setRecoverChecked(true);
+      });
+  }, [slug, sessionKey, replaceAll]);
+
+  // Telefon to'liq kiritilgach savat serverda saqlanadi (1.5 s kechikish bilan)
+  const phoneDigits = form.phone.replace(/\D/g, "").length;
+  useEffect(() => {
+    if (!recoverChecked || busy || items.length === 0 || phoneDigits < 9) return;
+    const timer = setTimeout(() => {
+      api<{ token: string }>(`/storefront/${slug}/checkout-session`, {
+        method: "PUT",
+        body: JSON.stringify({
+          token: sessionToken.current ?? undefined,
+          customerName: form.customerName || undefined,
+          phone: form.phone,
+          address: form.address || undefined,
+          items: items.map((i) => ({
+            productId: i.productId,
+            variantId: i.variantId ?? undefined,
+            quantity: i.quantity,
+          })),
+        }),
+      })
+        .then((r) => {
+          sessionToken.current = r.token;
+          try {
+            localStorage.setItem(sessionKey, r.token);
+          } catch {}
+        })
+        .catch(() => undefined);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [slug, sessionKey, items, form.customerName, form.phone, form.address, phoneDigits, recoverChecked, busy]);
+
+  // Savat bo'sh bo'lsa savat sahifasiga (tiklash tekshirilgandan keyin)
+  useEffect(() => {
+    if (recoverChecked && loaded && items.length === 0 && !busy) {
+      router.replace(`/${slug}/cart`);
+    }
+  }, [recoverChecked, loaded, items.length, busy, router, slug]);
 
   const deliveryFee = store?.deliveryFee ?? 0;
   const total = subtotal + deliveryFee;
@@ -49,6 +148,7 @@ export default function CheckoutPage({
             address: form.address || undefined,
             note: form.note || undefined,
             paymentMethod: form.paymentMethod,
+            checkoutToken: sessionToken.current ?? undefined,
             items: items.map((i) => ({
               productId: i.productId,
               variantId: i.variantId ?? undefined,
@@ -57,6 +157,10 @@ export default function CheckoutPage({
           }),
         },
       );
+      sessionToken.current = null;
+      try {
+        localStorage.removeItem(sessionKey);
+      } catch {}
       clear();
       router.push(`/${slug}/order/${res.orderId}`);
     } catch (err: any) {
@@ -65,10 +169,7 @@ export default function CheckoutPage({
     }
   }
 
-  if (items.length === 0 && !busy) {
-    router.replace(`/${slug}/cart`);
-    return null;
-  }
+  if (!recoverChecked || !loaded || (items.length === 0 && !busy)) return null;
 
   return (
     <div className="max-w-xl mx-auto">

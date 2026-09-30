@@ -3,10 +3,18 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { Prisma } from "@lynko-x/db";
 import { TelegramService } from "../notifications/telegram.service";
 import { PaymentsService } from "../payments/payments.service";
 import { PrismaService } from "../prisma/prisma.service";
-import { CheckoutDto } from "./dto";
+import { CheckoutDto, CheckoutSessionDto } from "./dto";
+import {
+  abandonedAfterMs,
+  createOrderInTx,
+  phoneKey,
+  resolveLines,
+  type LineInput,
+} from "../common/order-lines";
 import {
   effectivePlan,
   planLimit,
@@ -14,11 +22,6 @@ import {
 } from "../common/plans";
 
 const PAGE_SIZE = 24;
-
-/** Telefon raqamini solishtirish uchun: faqat raqamlar, oxirgi 9 tasi. */
-function phoneKey(phone: string): string {
-  return phone.replace(/\D/g, "").slice(-9);
-}
 
 @Injectable()
 export class StorefrontService {
@@ -159,102 +162,24 @@ export class StorefrontService {
     const store = await this.findStore(slug);
     const visible = await this.visibleFilter(store);
 
-    const order = await this.prisma.$transaction(async (tx) => {
-      const productIds = dto.items.map((i) => i.productId);
-      const products = await tx.product.findMany({
-        where: {
-          id: { in: productIds },
-          storeId: store.id,
-          isActive: true,
-          ...visible,
-        },
-        include: { variants: true },
-      });
-      const byId = new Map(products.map((p) => [p.id, p]));
+    const order = await this.prisma.$transaction((tx) =>
+      createOrderInTx(tx, {
+        storeId: store.id,
+        lines: dto.items,
+        productWhere: { isActive: true, ...visible },
+        customerName: dto.customerName,
+        phone: dto.phone,
+        address: dto.address,
+        note: dto.note,
+        deliveryFee: store.deliveryFee,
+        paymentMethod: dto.paymentMethod,
+      }),
+    );
 
-      let subtotal = 0;
-      const items: {
-        productId: string;
-        variantId: string | null;
-        name: string;
-        price: number;
-        quantity: number;
-      }[] = [];
-
-      for (const item of dto.items) {
-        const product = byId.get(item.productId);
-        if (!product)
-          throw new BadRequestException("Ba'zi mahsulotlar topilmadi");
-
-        let name = product.name;
-        let price = product.price;
-        let variantId: string | null = null;
-
-        if (product.variants.length > 0) {
-          // Variantli mahsulot: variant tanlanishi shart, ombor variantniki
-          const variant = product.variants.find((v) => v.id === item.variantId);
-          if (!variant) {
-            throw new BadRequestException(
-              `"${product.name}" uchun variant tanlanmagan`,
-            );
-          }
-          const updated = await tx.productVariant.updateMany({
-            where: { id: variant.id, stock: { gte: item.quantity } },
-            data: { stock: { decrement: item.quantity } },
-          });
-          if (updated.count === 0) {
-            throw new BadRequestException(
-              `"${product.name} — ${variant.name}" omborda yetarli emas`,
-            );
-          }
-          name = `${product.name} — ${variant.name}`;
-          price = variant.price ?? product.price;
-          variantId = variant.id;
-        } else {
-          const updated = await tx.product.updateMany({
-            where: { id: product.id, stock: { gte: item.quantity } },
-            data: { stock: { decrement: item.quantity } },
-          });
-          if (updated.count === 0) {
-            throw new BadRequestException(
-              `"${product.name}" omborda yetarli emas`,
-            );
-          }
-        }
-
-        subtotal += price * item.quantity;
-        items.push({
-          productId: product.id,
-          variantId,
-          name,
-          price,
-          quantity: item.quantity,
-        });
-      }
-
-      const last = await tx.order.findFirst({
-        where: { storeId: store.id },
-        orderBy: { number: "desc" },
-        select: { number: true },
-      });
-
-      return tx.order.create({
-        data: {
-          number: (last?.number ?? 1000) + 1,
-          storeId: store.id,
-          paymentMethod: dto.paymentMethod,
-          customerName: dto.customerName,
-          phone: dto.phone,
-          address: dto.address,
-          note: dto.note,
-          subtotal,
-          deliveryFee: store.deliveryFee,
-          total: subtotal + store.deliveryFee,
-          items: { create: items },
-        },
-        include: { items: true },
-      });
-    });
+    // Shu xaridorning ochiq checkout sessiyalari yopiladi (tugallanmagan xaridlar ro'yxati uchun)
+    await this.finishSessions(store.id, dto.checkoutToken, dto.phone, order.id).catch(
+      () => undefined,
+    );
 
     let payment: { paymentId: string; redirectUrl?: string } | null = null;
     if (dto.paymentMethod === "ONLINE_MOCK") {
@@ -322,5 +247,120 @@ export class StorefrontService {
     });
     if (!order) throw new NotFoundException("Buyurtma topilmadi");
     return order;
+  }
+
+  /**
+   * Checkout sessiyasi: xaridor telefonini kiritganda savat serverda saqlanadi.
+   * Buyurtma berilmasa, ma'lum vaqtdan keyin sotuvchiga "tugallanmagan xarid"
+   * sifatida ko'rinadi. Token xaridor brauzerida turadi; tiklash havolasi ham shu.
+   */
+  async saveSession(slug: string, dto: CheckoutSessionDto) {
+    const store = await this.findStore(slug);
+    const key = phoneKey(dto.phone);
+    if (key.length < 9) {
+      throw new BadRequestException("Telefon raqami to'liq emas");
+    }
+    const lines = await resolveLines(this.prisma, store.id, dto.items, {
+      productWhere: { isActive: true, ...(await this.visibleFilter(store)) },
+    });
+    if (lines.length === 0) throw new BadRequestException("Savat bo'sh");
+    const items = lines.map(({ stock, ...line }) => {
+      void stock;
+      return line;
+    });
+    const data = {
+      customerName: dto.customerName?.trim() || null,
+      phone: dto.phone.trim(),
+      phoneKey: key,
+      address: dto.address?.trim() || null,
+      items: items as unknown as Prisma.InputJsonValue,
+      subtotal: lines.reduce((s, l) => s + l.price * l.quantity, 0),
+    };
+    const existing = dto.token
+      ? await this.prisma.checkoutSession.findFirst({
+          where: { token: dto.token, storeId: store.id, completedAt: null },
+        })
+      : null;
+    if (existing) {
+      // Uzoq tanaffusdan keyin qaytgan bo'lsa, "tashlab ketilgan" belgisi saqlanib qoladi
+      const idle =
+        Date.now() - existing.updatedAt.getTime() > abandonedAfterMs();
+      await this.prisma.checkoutSession.update({
+        where: { id: existing.id },
+        data: { ...data, ...(idle ? { wasAbandoned: true } : {}) },
+      });
+      return { token: existing.token };
+    }
+    const created = await this.prisma.checkoutSession.create({
+      data: { storeId: store.id, ...data },
+      select: { token: true },
+    });
+    return { token: created.token };
+  }
+
+  /** Tiklash havolasi: savat va kontaktlar qaytariladi (faqat hozir sotuvda bor mahsulotlar). */
+  async getSession(slug: string, token: string) {
+    const store = await this.findStore(slug);
+    const session = await this.prisma.checkoutSession.findFirst({
+      where: { token, storeId: store.id, completedAt: null },
+    });
+    if (!session) throw new NotFoundException("Savat topilmadi");
+    const saved = session.items as unknown as LineInput[];
+    const lines = await resolveLines(this.prisma, store.id, saved, {
+      productWhere: { isActive: true, ...(await this.visibleFilter(store)) },
+    });
+    await this.prisma.checkoutSession.update({
+      where: { id: session.id },
+      data: {
+        wasAbandoned: true,
+        recoveryOpenedAt: session.recoveryOpenedAt ?? new Date(),
+      },
+    });
+    return {
+      customerName: session.customerName,
+      phone: session.phone,
+      address: session.address,
+      items: lines
+        .filter((l) => l.stock > 0)
+        .map((l) => ({ ...l, quantity: Math.min(l.quantity, l.stock) })),
+    };
+  }
+
+  /**
+   * Buyurtma berilgach shu token yoki shu telefon bilan ochiq sessiyalar yopiladi.
+   * Tashlab ketilgan sessiya "tiklangan" deb belgilanadi, qolganlari o'chiriladi.
+   */
+  private async finishSessions(
+    storeId: string,
+    token: string | undefined,
+    phone: string,
+    orderId: string,
+  ) {
+    const key = phoneKey(phone);
+    const open = await this.prisma.checkoutSession.findMany({
+      where: {
+        storeId,
+        completedAt: null,
+        OR: [...(token ? [{ token }] : []), ...(key ? [{ phoneKey: key }] : [])],
+      },
+    });
+    if (open.length === 0) return;
+    const primary = open.find((s) => s.token === token) ?? open[0];
+    const wasAbandoned =
+      primary.wasAbandoned ||
+      primary.recoveryOpenedAt != null ||
+      Date.now() - primary.updatedAt.getTime() > abandonedAfterMs();
+    const others = open.filter((s) => s.id !== primary.id).map((s) => s.id);
+    await this.prisma.$transaction([
+      ...(others.length
+        ? [this.prisma.checkoutSession.deleteMany({ where: { id: { in: others } } })]
+        : []),
+      wasAbandoned
+        ? this.prisma.checkoutSession.update({
+            where: { id: primary.id },
+            data: { completedAt: new Date(), recovered: true, orderId },
+          })
+        : this.prisma.checkoutSession.delete({ where: { id: primary.id } }),
+    ]);
   }
 }

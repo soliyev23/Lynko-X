@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
-import { CheckoutDto } from "./dto";
+import { Body, Controller, Get, Param, Post, Put, Query } from "@nestjs/common";
+import { CheckoutDto, CheckoutSessionDto } from "./dto";
 import { StorefrontService } from "./storefront.service";
 
 /** Ommaviy API — xaridorlar uchun, autentifikatsiya talab qilinmaydi. */
@@ -38,6 +38,18 @@ export class StorefrontController {
   @Post("orders")
   checkout(@Param("slug") slug: string, @Body() dto: CheckoutDto) {
     return this.storefront.checkout(slug, dto);
+  }
+
+  /** Savat + telefon saqlanadi; token qaytadi (xaridor brauzerida turadi). */
+  @Put("checkout-session")
+  saveSession(@Param("slug") slug: string, @Body() dto: CheckoutSessionDto) {
+    return this.storefront.saveSession(slug, dto);
+  }
+
+  /** Tiklash havolasi orqali savatni qaytarish. */
+  @Get("checkout-session/:token")
+  getSession(@Param("slug") slug: string, @Param("token") token: string) {
+    return this.storefront.getSession(slug, token);
   }
 
   @Get("orders/:orderId")

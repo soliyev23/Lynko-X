@@ -16,13 +16,13 @@ enum UserRole {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String        @id @default(cuid())
+  email        String        @unique
   passwordHash String
   name         String
-  role         UserRole @default(MERCHANT)
+  role         UserRole      @default(MERCHANT)
   adminRole    AdminRole? // faqat role = ADMIN uchun: huquqlar darajasi
-  createdAt    DateTime @default(now())
+  createdAt    DateTime      @default(now())
   stores       Store[]
   planPayments PlanPayment[] // admin sifatida yozgan to'lovlari
   storeNotes   StoreNote[]
@@ -45,37 +45,39 @@ enum StorePlan {
 }
 
 model Store {
-  id               String     @id @default(cuid())
-  slug             String     @unique // subdomen: {slug}.lynko-x.uz — hozircha /{slug}
+  id               String            @id @default(cuid())
+  slug             String            @unique // subdomen: {slug}.lynko-x.uz — hozircha /{slug}
   name             String
   description      String?
   phone            String?
   telegram         String?
   logoUrl          String?
-  currency         String     @default("UZS")
-  locale           String     @default("uz")
-  deliveryFee      Int        @default(0) // so'mda
-  plan             StorePlan  @default(FREE)
+  currency         String            @default("UZS")
+  locale           String            @default("uz")
+  deliveryFee      Int               @default(0) // so'mda
+  plan             StorePlan         @default(FREE)
   planExpiresAt    DateTime? // pullik tarif yoki sinov muddati; null = muddatsiz
-  isTrial          Boolean    @default(false) // sinov davri (bepul berilgan pullik tarif)
-  theme            String     @default("classic") // vitrina shabloni: classic | minimal | bold | elegant | market
+  isTrial          Boolean           @default(false) // sinov davri (bepul berilgan pullik tarif)
+  theme            String            @default("classic") // vitrina shabloni: classic | minimal | bold | elegant | market
   bannerUrl        String? // hero-bo'lim uchun banner rasmi
   brandColor       String? // sotuvchining brend rangi (#rrggbb); null = shablonning standart rangi
   telegramBotToken String? // yangi buyurtma bildirishnomalari uchun
   telegramChatId   String?
-  isActive         Boolean    @default(true)
+  isActive         Boolean           @default(true)
   blockReason      String? // owner-panel: nima uchun bloklangan
   blockedAt        DateTime?
   ownerId          String
-  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  products    Product[]
-  categories  Category[]
-  orders      Order[]
-  planPayments PlanPayment[]
-  notes       StoreNote[]
-  auditLogs   AuditLog[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  owner            User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products         Product[]
+  categories       Category[]
+  orders           Order[]
+  planPayments     PlanPayment[]
+  notes            StoreNote[]
+  auditLogs        AuditLog[]
+  drafts           DraftOrder[]
+  checkoutSessions CheckoutSession[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 }
 
 // ============ Owner-panel: ichki izohlar va audit-jurnal ============
@@ -216,24 +218,26 @@ enum PaymentMethod {
 }
 
 model Order {
-  id            String        @id @default(cuid())
-  number        Int // do'kon ichida tartib raqam: #1001, #1002...
-  storeId       String
-  store         Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  status        OrderStatus   @default(NEW)
-  paymentStatus PaymentStatus @default(PENDING)
-  paymentMethod PaymentMethod
-  customerName  String
-  phone         String
-  address       String?
-  note          String?
-  subtotal      Int
-  deliveryFee   Int           @default(0)
-  total         Int
-  items         OrderItem[]
-  payments      Payment[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id              String           @id @default(cuid())
+  number          Int // do'kon ichida tartib raqam: #1001, #1002...
+  storeId         String
+  store           Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  status          OrderStatus      @default(NEW)
+  paymentStatus   PaymentStatus    @default(PENDING)
+  paymentMethod   PaymentMethod
+  customerName    String
+  phone           String
+  address         String?
+  note            String?
+  subtotal        Int
+  deliveryFee     Int              @default(0)
+  total           Int
+  items           OrderItem[]
+  payments        Payment[]
+  draft           DraftOrder?
+  checkoutSession CheckoutSession?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   @@unique([storeId, number])
   @@index([storeId, status])
@@ -263,4 +267,74 @@ model Payment {
   raw           Json?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+}
+
+enum DraftStatus {
+  OPEN
+  COMPLETED
+}
+
+/// Qoralama: sotuvchi qo'lda kiritgan buyurtma (telefon yoki chat orqali kelgan).
+/// "Buyurtmaga aylantirish" bosilganda haqiqiy Order yaratiladi va ombor kamayadi.
+model DraftOrder {
+  id           String           @id @default(cuid())
+  number       Int // do'kon ichida tartib raqam: D1, D2...
+  storeId      String
+  store        Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  status       DraftStatus      @default(OPEN)
+  customerName String?
+  phone        String?
+  address      String?
+  note         String?
+  deliveryFee  Int              @default(0)
+  items        DraftOrderItem[]
+  orderId      String?          @unique // aylantirilgan buyurtma
+  order        Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  completedAt  DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@unique([storeId, number])
+  @@index([storeId, status])
+}
+
+model DraftOrderItem {
+  id          String     @id @default(cuid())
+  draftId     String
+  draft       DraftOrder @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  productId   String
+  variantId   String?
+  name        String // saqlangan paytdagi nom (snapshot)
+  variantName String?
+  price       Int // saqlangan paytdagi narx; aylantirishda serverda qayta hisoblanadi
+  quantity    Int
+  image       String?
+
+  @@index([draftId])
+}
+
+/// Checkout sessiyasi: xaridor telefonini kiritgan, lekin buyurtma hali berilmagan savat.
+/// Ma'lum vaqt faollik bo'lmasa "tugallanmagan xarid" sifatida sotuvchiga ko'rinadi.
+model CheckoutSession {
+  id               String    @id @default(cuid())
+  token            String    @unique @default(cuid()) // xaridor brauzerida saqlanadi; tiklash havolasi
+  storeId          String
+  store            Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  customerName     String?
+  phone            String
+  phoneKey         String // faqat raqamlar, oxirgi 9 tasi (solishtirish uchun)
+  address          String?
+  items            Json // [{productId, variantId, name, variantName, price, quantity, image}]
+  subtotal         Int
+  wasAbandoned     Boolean   @default(false) // kamida bir marta tashlab ketilgan
+  recoveryOpenedAt DateTime? // tiklash havolasi ochilgan vaqt
+  recovered        Boolean   @default(false) // tashlab ketilgandan keyin buyurtma berilgan
+  completedAt      DateTime?
+  orderId          String?   @unique
+  order            Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([storeId, completedAt, updatedAt])
+  @@index([storeId, phoneKey])
 }

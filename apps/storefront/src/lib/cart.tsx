@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -35,6 +36,10 @@ interface CartContextValue {
   ) => void;
   remove: (productId: string, variantId: string | null) => void;
   clear: () => void;
+  /** Savatni butunlay almashtirish (tiklash havolasi uchun) */
+  replaceAll: (items: CartItem[]) => void;
+  /** localStorage o'qib bo'lindi (unga qadar items bo'sh ko'rinadi) */
+  loaded: boolean;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -106,13 +111,14 @@ export function CartProvider({
     setItems((prev) => prev.filter((i) => !sameLine(i, productId, variantId)));
 
   const clear = () => setItems([]);
+  const replaceAll = useCallback((next: CartItem[]) => setItems(next), []);
 
   const count = items.reduce((sum, i) => sum + i.quantity, 0);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   return (
     <CartContext.Provider
-      value={{ items, count, subtotal, add, setQuantity, remove, clear }}
+      value={{ items, count, subtotal, add, setQuantity, remove, clear, replaceAll, loaded }}
     >
       {children}
     </CartContext.Provider>

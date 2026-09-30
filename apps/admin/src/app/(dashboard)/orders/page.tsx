@@ -7,6 +7,10 @@ import { dateTime, money } from "@/lib/format";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { EmptyRow } from "@/components/EmptyState";
 import { PaymentBadge, StatusBadge } from "@/components/badges";
+import { ButtonLink } from "@/components/ui";
+import { OrdersTabs } from "@/components/OrdersTabs";
+import { SectionEmpty } from "@/components/SectionEmpty";
+import { CartIcon } from "@/components/icons";
 
 interface Order {
   id: string;
@@ -33,9 +37,27 @@ export default function OrdersPage() {
       .catch(console.error);
   }, [filter]);
 
+  if (orders && orders.length === 0 && filter === "") {
+    return (
+      <div>
+        <OrdersHeader />
+        <SectionEmpty
+          kind="orders"
+          title={t("ordersEmptyTitle")}
+          text={t("ordersEmptyText")}
+          action={
+            <ButtonLink href="/orders/drafts/new" variant="secondary">
+              {t("createOrder")}
+            </ButtonLink>
+          }
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t("orders")}</h1>
+      <OrdersHeader />
       <div className="flex flex-wrap gap-2 mb-4">
         {FILTERS.map((f) => (
           <button
@@ -105,5 +127,24 @@ export default function OrdersPage() {
         </table>
       </div>
     </div>
+  );
+}
+
+/** Sarlavha, "Buyurtma yaratish" tugmasi (qoralama orqali) va bo'lim tablari */
+function OrdersHeader() {
+  const { t } = useI18n();
+  return (
+    <>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="flex items-center gap-2.5 text-xl font-bold">
+          <CartIcon size={20} className="text-gray-400" />
+          {t("orders")}
+        </h1>
+        <ButtonLink href="/orders/drafts/new" variant="primary">
+          {t("createOrder")}
+        </ButtonLink>
+      </div>
+      <OrdersTabs />
+    </>
   );
 }
